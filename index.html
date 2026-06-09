@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFlex | Plataforma de Streaming</title>
+    <!-- Iconos de Google para el buscador y menús -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+    <header class="navbar">
+        <div class="nav-left">
+            <div class="logo">Cine<span>Flex</span></div>
+            <nav class="nav-menu">
+                <a href="#" class="active">Inicio</a>
+                <a href="#">Recomendados</a>
+                <a href="#">Mi Lista</a>
+                <!-- Desplegable de Categorías -->
+                <div class="dropdown">
+                    <button class="dropbtn">Categorías <span class="material-symbols-outlined">expand_more</span></button>
+                    <div class="dropdown-content" id="lista-categorias">
+                        <!-- Las categorías se cargarán dinámicamente con JS o a mano -->
+                        <a href="#">Acción</a>
+                        <a href="#">Comedia</a>
+                        <a href="#">Drama</a>
+                        <a href="#">Terror</a>
+                        <a href="#">Ciencia Ficción</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- BUSCADOR INTELIGENTE -->
+        <div class="nav-right">
+            <div class="search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" id="input-busqueda" placeholder="Títulos, géneros, actores...">
+            </div>
+            <div class="user-profile">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" alt="Usuario">
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-layout">
+        
+        <!-- SECCIÓN 1: RECOMENDADOS (Películas Populares) -->
+        <section class="movie-section">
+            <h2 class="section-title">Recomendados para ti</h2>
+            <div id="contenedor-populares" class="movies-slider">
+                <!-- JS meterá las películas aquí -->
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: TENDENCIAS u OTRAS OPCIONES -->
+        <section class="movie-section">
+            <h2 class="section-title">Tendencias de la semana</h2>
+            <div id="contenedor-tendencias" class="movies-slider">
+                <!-- JS meterá más películas aquí -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 CineFlex. Diseñado con colores cálidos para amantes del cine.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

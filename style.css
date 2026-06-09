@@ -1,0 +1,181 @@
+/* VARIABLES DE COLOR (Para cambiarlos fácilmente) */
+:root {
+    --bg-principal: #120f0e;     /* Negro muy oscuro con un toque cálido/marrón */
+    --bg-tarjetas: #1a1615;      /* Un tono un poco más claro para relieves */
+    --color-primario: #df9e3e;   /* Dorado/Ámbar cálido para el logo y botones */
+    --color-texto: #f5f0eb;      /* Blanco hueso (más suave a la vista que el blanco puro) */
+    --color-gris: #9c9189;       /* Gris cálido para textos secundarios */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-principal);
+    color: var(--color-texto);
+    overflow-x: hidden;
+}
+
+/* BARRA DE NAVEGACIÓN */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 4%;
+    background: linear-gradient(to bottom, rgba(18, 15, 14, 0.95) 0%, rgba(18, 15, 14, 0) 100%);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: background 0.3s;
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--color-texto);
+}
+
+.logo span {
+    color: var(--color-primario);
+}
+
+.nav-menu {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-menu a {
+    color: var(--color-gris);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.nav-menu a:hover, .nav-menu a.active {
+    color: var(--color-texto);
+}
+
+/* DESPLEGABLE (Dropdown) */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background: none;
+    border: none;
+    color: var(--color-gris);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--bg-tarjetas);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.5);
+    z-index: 1;
+    border-radius: 4px;
+    border: 1px solid #2a2321;
+}
+
+.dropdown-content a {
+    color: var(--color-texto);
+    padding: 12px 16px;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--color-primario);
+    color: var(--bg-principal);
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* BUSCADOR INTELIGENTE estilo Netflix */
+.search-box {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--color-gris);
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: width 0.4s, border-color 0.4s;
+}
+
+.search-box:focus-within {
+    border-color: var(--color-primario);
+}
+
+.search-box input {
+    background: none;
+    border: none;
+    color: var(--color-texto);
+    outline: none;
+    padding-left: 8px;
+    font-size: 14px;
+    width: 200px;
+}
+
+.search-icon {
+    color: var(--color-gris);
+    cursor: pointer;
+}
+
+.user-profile img {
+    width: 35px;
+    height: 35px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* CONTENEDOR DE PELÍCULAS */
+.main-layout {
+    margin-top: 100px; /* Para que la navbar fija no tape el contenido */
+    padding: 0 4%;
+}
+
+.movie-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: var(--color-texto);
+}
+
+.movies-slider {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 15px;
+}
+
+/* Ocultar barra de scroll horrible en navegadores */
+.movies-slider::-webkit-scrollbar {
+    height: 8px;
+}
+.movies-slider::-webkit-scrollbar-thumb {
+    background: var(--bg-tarjetas);
+    border-radius: 4px;
+}
