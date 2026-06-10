@@ -50,23 +50,19 @@ async function cargarSeccion(url, contenedor) {
     }
 }
 
-// 4. PROGRAMAR EL BUSCADOR INTELIGENTE (Estilo Netflix)
+// PROGRAMAR EL BUSCADOR INTELIGENTE
 inputBusqueda.addEventListener('input', (evento) => {
     const textoBusqueda = evento.target.value.trim();
+    const titulo = document.getElementById('titulo-principal');
+    const seccionTendencias = document.getElementById('seccion-tendencias');
 
-    // Si el usuario escribe algo, buscamos eso. Si lo borra, regresamos a las populares
     if (textoBusqueda.length > 0) {
-        // Cambiamos el título principal para avisar que está buscando
-        document.querySelector('.section-title').innerText = `Resultados para: "${textoBusqueda}"`;
-        // Ocultamos temporalmente la segunda fila para enfocarnos en la búsqueda
-        contenedorTendencias.parentElement.style.display = 'none';
-        
+        titulo.innerText = `Resultados para: "${textoBusqueda}"`;
+        seccionTendencias.style.display = 'none'; // Oculta la fila de tendencias
         cargarSeccion(`${URL_BUSQUEDA}${textoBusqueda}`, contenedorPopulares);
     } else {
-        // Si borra el buscador, restauramos todo como al inicio
-        document.querySelector('.section-title').innerText = "Recomendados para ti";
-        contenedorTendencias.parentElement.style.display = 'block';
-        
+        titulo.innerText = "Recomendados para ti";
+        seccionTendencias.style.display = 'block'; // Muestra las tendencias de nuevo
         cargarSeccion(URL_POPULARES, contenedorPopulares);
     }
 });
@@ -86,3 +82,17 @@ function deslizar(idContenedor, direccion) {
         contenedor.scrollLeft += distanciaX;
     }
 }
+// Activar botones del Menú
+document.getElementById('btn-inicio').addEventListener('click', (e) => {
+    e.preventDefault();
+    inputBusqueda.value = ''; // Limpia el buscador si había texto
+    document.getElementById('titulo-principal').innerText = "Recomendados para ti";
+    document.getElementById('seccion-tendencias').style.display = 'block';
+    cargarSeccion(URL_POPULARES, contenedorPopulares);
+});
+
+document.getElementById('btn-recomendados').addEventListener('click', (e) => {
+    e.preventDefault();
+    // Te desplaza suavemente hacia abajo hasta la sección si la página es muy larga
+    document.getElementById('titulo-principal').scrollIntoView({ behavior: 'smooth' });
+});
