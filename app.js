@@ -32,14 +32,18 @@ async function cargarSeccion(url, contenedor) {
             // Si la película no tiene póster, usamos una imagen por defecto
             const rutaPoster = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
 
-            // Metemos el diseño de la tarjeta con los datos reales
-            tarjeta.innerHTML = `
-                <img src="${rutaPoster}" alt="${pelicula.title}">
+           tarjeta.innerHTML = `
+              <img src="${rutaPoster}" alt="${pelicula.title}">
                 <div class="movie-info">
-                    <h3>${pelicula.title}</h3>
-                    <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
-                </div>
+             <h3>${pelicula.title}</h3>
+             <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
+              <!-- Botón para añadir a favoritos -->
+               <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
+               + Mi Lista
+             </button>
+              </div>
             `;
+        
 
             // Añadimos la tarjeta al contenedor correspondiente
             contenedor.appendChild(tarjeta);
@@ -96,3 +100,23 @@ document.getElementById('btn-recomendados').addEventListener('click', (e) => {
     // Te desplaza suavemente hacia abajo hasta la sección si la página es muy larga
     document.getElementById('titulo-principal').scrollIntoView({ behavior: 'smooth' });
 });
+// Función para guardar películas en el almacenamiento local (LocalStorage)
+function guardarEnLista(id, titulo, poster, voto) {
+    // 1. Obtener la lista actual de películas guardadas (si no hay ninguna, empezamos con un arreglo vacío)
+    let listaFavoritos = JSON.parse(localStorage.getItem('sofveria_favoritos')) || [];
+
+    // 2. Comprobar si la película ya estaba agregada para no repetirla
+    const existe = listaFavoritos.some(p => p.id === id);
+
+    if (!existe) {
+        // 3. Si no existe, creamos el objeto de la película y lo sumamos a la lista
+        const nuevaPelicula = { id, titulo, poster, voto };
+        listaFavoritos.push(nuevaPelicula);
+        
+        // 4. Guardamos la lista actualizada de vuelta en el navegador transformándola en texto
+        localStorage.setItem('sofveria_favoritos', JSON.stringify(listaFavoritos));
+        alert(`"${titulo}" se ha añadido a Mi Lista.`);
+    } else {
+        alert("Esta película ya está en tu lista.");
+    }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Lista | SofVeria</title>
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        /* Estilos específicos para la cuadrícula de favoritos */
+        .grid-favorites {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        .empty-message {
+            color: var(--color-gris);
+            font-size: 18px;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .btn-remove {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        .btn-remove:hover { background: #ff1a1a; }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <header class="navbar">
+        <div class="nav-left">
+            <div class="logo">Sof<span>Veria</span></div>
+            <nav class="nav-menu">
+                <a href="./index.html">Inicio</a>
+                <a href="./milista.html" class="active">Mi Lista</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-layout" style="margin-top: 120px;">
+        <h2 class="section-title">Mi Lista de Seguimiento</h2>
+        
+        <!-- Aquí se mostrarán los favoritos guardados -->
+        <div id="contenedor-favoritos" class="grid-favorites"></div>
+    </main>
+
+    <!-- Cargar el script especial para la lista -->
+    <script src="./milista.js"></script>
+</body>
+</html>
