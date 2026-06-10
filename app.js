@@ -74,3 +74,15 @@ inputBusqueda.addEventListener('input', (evento) => {
 // 5. INICIALIZAR LA PÁGINA (Cargar las listas al abrir la web)
 cargarSeccion(URL_POPULARES, contenedorPopulares);
 cargarSeccion(URL_TENDENCIAS, contenedorTendencias);
+// Función para mover el carrusel con las flechas
+function deslizar(idContenedor, direccion) {
+    const contenedor = document.getElementById(idContenedor);
+    // Calculamos cuánto se moverá (el ancho de unas 3 tarjetas aprox)
+    const distanciaX = 500; 
+
+    if (direccion === 'izquierda') {
+        contenedor.scrollLeft -= distanciaX;
+    } else {
+        contenedor.scrollLeft += distanciaX;
+    }
+}
