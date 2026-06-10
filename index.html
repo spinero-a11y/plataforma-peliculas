@@ -73,7 +73,34 @@
     <footer class="footer">
         <p>&copy; 2026 SofVeria. Diseñado para amantes del cine.</p>
     </footer>
-
+<div id="movie-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="close-modal-btn">&times;</span>
+        
+        <div class="modal-body">
+            <div class="modal-poster">
+                <img id="modal-img" src="" alt="Póster">
+            </div>
+            <div class="modal-info">
+                <h2 id="modal-titulo">Título de la película</h2>
+                <div class="modal-metadata">
+                    <span id="modal-puntuacion">⭐ 0.0</span>
+                    <span id="modal-fecha">Año</span>
+                </div>
+                <p id="modal-sinopsis">Aquí irá el resumen detallado de la película obtenido de la API...</p>
+                
+                <div class="modal-actions">
+                    <button id="btn-ver-trailer" class="btn-action btn-trailer">🎬 Ver Tráiler</button>
+                    <button id="btn-ver-pelicula" class="btn-action btn-play">▶️ Ver Película</button>
+                </div>
+                
+                <div id="video-container" style="display: none; margin-top: 20px;">
+                    <iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <script src="app.js"></script>
 </body>
 </html>

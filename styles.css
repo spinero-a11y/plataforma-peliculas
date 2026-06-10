@@ -315,3 +315,123 @@ body {
     transform: scale(0.96); /* El botón se encoge un poquito simulando que lo presionas físicamente */
     background-color: #c78b32; /* Un dorado un poco más oscuro por la presión */
 }
+/* VENTANA MODAL (Oculta por defecto) */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 2000; /* Por encima de la barra de navegación */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(18, 15, 14, 0.85);
+    backdrop-filter: blur(8px); /* Fondo borroso ultra elegante */
+}
+
+/* Caja de contenido central */
+.modal-content {
+    background-color: var(--bg-tarjetas);
+    margin: 5% auto;
+    padding: 30px;
+    border: 1px solid rgba(223, 158, 62, 0.2);
+    width: 70%;
+    max-width: 850px;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    animation: aparecerModal 0.4s ease;
+}
+
+@keyframes aparecerModal {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Botón de cerrar (X) */
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    color: var(--color-gris);
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.close-modal:hover { color: var(--color-primario); }
+
+/* Cuerpo interno de la modal */
+.modal-body {
+    display: flex;
+    gap: 30px;
+    margin-top: 15px;
+}
+
+.modal-poster img {
+    width: 230px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.modal-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-info h2 {
+    font-size: 28px;
+    color: var(--color-texto);
+}
+
+.modal-metadata {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    font-weight: bold;
+}
+.modal-metadata span:first-child { color: var(--color-primario); }
+.modal-metadata span:last-child { color: var(--color-gris); }
+
+#modal-sinopsis {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #ded6cf;
+}
+
+/* BOTONES DE ACCIÓN */
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-action {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s ease;
+}
+
+.btn-trailer {
+    background-color: transparent;
+    color: var(--color-texto);
+    border: 1px solid var(--color-gris);
+}
+.btn-trailer:hover {
+    border-color: var(--color-texto);
+    background-color: rgba(255,255,255,0.05);
+}
+
+.btn-play {
+    background-color: var(--color-primario);
+    color: var(--bg-principal);
+}
+.btn-play:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 15px rgba(223, 158, 62, 0.4);
+}

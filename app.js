@@ -32,16 +32,16 @@ async function cargarSeccion(url, contenedor) {
             // Si la película no tiene póster, usamos una imagen por defecto
             const rutaPoster = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
 
-           tarjeta.innerHTML = `
-              <img src="${rutaPoster}" alt="${pelicula.title}">
-             <div class="movie-info">
-              <h3>${pelicula.title}</h3>
-              <span class="rating">⭐ ${pelicula.vote_average.toFixed(1)}</span>
+          tarjeta.innerHTML = `
+             <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')">
+              <div class="movie-info">
+               <h3>${pelicula.title}</h3>
+             <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
               <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
-              <span class="material-symbols-outlined">add</span> Mi Lista
-             </button>
-              </div>
-           `;
+               <span class="material-symbols-outlined">add</span> Mi Lista
+              </button>
+             </div>
+            `;
         
 
             // Añadimos la tarjeta al contenedor correspondiente
@@ -119,3 +119,76 @@ function guardarEnLista(id, titulo, poster, voto) {
         alert("Esta película ya está en tu lista.");
     }
 }
+// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
+const modal = document.getElementById('movie-modal');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const videoContainer = document.getElementById('video-container');
+const videoPlayer = document.getElementById('video-player');
+
+// Función que se activa al hacer clic en una película
+async function abrirDetalles(id) {
+    try {
+        // 1. Pedimos los datos completos de la película a TMDb usando su ID
+        const urlDetalles = `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`;
+        const respuesta = await fetch(urlDetalles);
+        const pelicula = await respuesta.json();
+
+        // 2. Rellenamos los textos de la modal
+        document.getElementById('modal-img').src = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
+        document.getElementById('modal-titulo').innerText = pelicula.title;
+        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.vote_average.toFixed(1)} (Reseñas)`;
+        document.getElementById('modal-fecha').innerText = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
+        document.getElementById('modal-sinopsis').innerText = pelicula.overview || "No hay una sinopsis disponible para esta película.";
+
+        // Ocultamos el reproductor de video por defecto cada vez que abrimos una película nueva
+        videoContainer.style.display = 'none';
+        videoPlayer.src = '';
+
+        // 3. Buscar el Tráiler oficial en YouTube a través de la API de TMDb
+        const urlVideos = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=es-ES`;
+        const respVideos = await fetch(urlVideos);
+        const datosVideos = await respVideos.json();
+        
+        // Buscamos un video que sea tipo "Trailer" y de "YouTube"
+        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') 
+                     || datosVideos.results.find(vid => vid.site === 'YouTube'); // Alternativa por si no dice "Trailer"
+
+        // Configurar acción al presionar "Ver Tráiler"
+        const btnTrailer = document.getElementById('btn-ver-trailer');
+        if (trailer) {
+            btnTrailer.style.display = 'block';
+            btnTrailer.onclick = () => {
+                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+                videoContainer.style.display = 'block';
+                videoContainer.scrollIntoView({ behavior: 'smooth' });
+            };
+        } else {
+            btnTrailer.style.display = 'none'; // Se oculta si de plano TMDb no tiene tráiler en YouTube
+        }
+
+        // Configurar acción al presionar "Ver Película" (Simulador profesional)
+        document.getElementById('btn-ver-pelicula').onclick = () => {
+            alert(`🎬 Iniciando la reproducción de: "${pelicula.title}". \n\nNota técnica: En un entorno real, aquí se conectaría un servidor de streaming de video seguro.`);
+        };
+
+        // 4. Mostramos la ventana modal quitando el display oculto
+        modal.style.display = 'block';
+
+    } catch (error) {
+        console.error("Error al obtener los detalles de la película:", error);
+    }
+}
+
+// Cerrar la ventana al pulsar en la (X)
+closeModalBtn.onclick = () => {
+    modal.style.display = 'none';
+    videoPlayer.src = ''; // Apaga el video de YouTube para que no siga sonando de fondo
+};
+
+// Cerrar la ventana automáticamente si el usuario hace clic fuera de la caja central
+window.onclick = (evento) => {
+    if (evento.target === modal) {
+        modal.style.display = 'none';
+        videoPlayer.src = '';
+    }
+};
