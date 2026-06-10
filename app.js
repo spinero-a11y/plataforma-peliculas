@@ -34,15 +34,14 @@ async function cargarSeccion(url, contenedor) {
 
            tarjeta.innerHTML = `
               <img src="${rutaPoster}" alt="${pelicula.title}">
-                <div class="movie-info">
-             <h3>${pelicula.title}</h3>
-             <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
-              <!-- Botón para añadir a favoritos -->
-               <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
-               + Mi Lista
+             <div class="movie-info">
+              <h3>${pelicula.title}</h3>
+              <span class="rating">⭐ ${pelicula.vote_average.toFixed(1)}</span>
+              <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
+              <span class="material-symbols-outlined">add</span> Mi Lista
              </button>
               </div>
-            `;
+           `;
         
 
             // Añadimos la tarjeta al contenedor correspondiente

@@ -271,3 +271,47 @@ body {
 .movies-slider {
     scroll-behavior: smooth; /* Hace que el deslizamiento sea suave al hacer clic */
 }
+/* BOTÓN DE MI LISTA PROFESIONAL */
+.btn-add-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; /* Espacio entre el icono de '+' y el texto */
+    background-color: rgba(26, 22, 21, 0.85); /* Fondo oscuro semi-transparente */
+    color: var(--color-texto);
+    border: 1px solid rgba(245, 240, 235, 0.3); /* Borde fino y suave */
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 20px; /* Bordes redondeados estilo cápsula muy modernos */
+    margin-top: 8px;
+    width: 100%;
+    transition: all 0.25s ease; /* Transición suave para todos los efectos */
+    backdrop-filter: blur(4px); /* Difumina ligeramente el fondo (estilo iOS/Netflix premium) */
+}
+
+/* El icono de '+' dentro del botón */
+.btn-add-list .material-symbols-outlined {
+    font-size: 16px;
+    transition: transform 0.25s ease;
+}
+
+/* EFECTO CUANDO EL MOUSE ESTÁ ENCIMA (Hover) */
+.btn-add-list:hover {
+    background-color: var(--color-primario); /* Cambia al dorado de SofVeria */
+    color: var(--bg-principal); /* El texto se vuelve oscuro para contrastar */
+    border-color: var(--color-primario);
+    box-shadow: 0 4px 12px rgba(223, 158, 62, 0.3); /* Destello dorado suave abajo */
+}
+
+/* Hace que el icono gire un poquito al pasar el mouse, un detalle muy pro */
+.btn-add-list:hover .material-symbols-outlined {
+    transform: rotate(90deg);
+}
+
+/* EFECTO CUANDO HACES CLIC (Active) */
+.btn-add-list:active {
+    transform: scale(0.96); /* El botón se encoge un poquito simulando que lo presionas físicamente */
+    background-color: #c78b32; /* Un dorado un poco más oscuro por la presión */
+}
