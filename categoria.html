@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categoría | SofVeria</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        /* Reutilizamos la cuadrícula organizada que usamos en favoritos */
+        .grid-categorias {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-left">
+            <div class="logo">Sof<span>Veria</span></div>
+            <nav class="nav-menu">
+                <a href="./index.html">Inicio</a>
+                <a href="./milista.html">Mi Lista</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-layout" style="margin-top: 120px;">
+        <h2 class="section-title" id="titulo-categoria">Cargando categoría...</h2>
+        
+        <div id="contenedor-categoria" class="grid-categorias"></div>
+    </main>
+
+    <div id="movie-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal-btn">&times;</span>
+            <div class="modal-body">
+                <div class="modal-poster"><img id="modal-img" src="" alt="Póster"></div>
+                <div class="modal-info">
+                    <h2 id="modal-titulo">Título</h2>
+                    <div class="modal-metadata"><span id="modal-puntuacion">⭐ 0.0</span><span id="modal-fecha">Año</span></div>
+                    <p id="modal-sinopsis">Sinopsis...</p>
+                    <div class="modal-actions">
+                        <button id="btn-ver-trailer" class="btn-action btn-trailer">🎬 Ver Tráiler</button>
+                        <button id="btn-ver-pelicula" class="btn-action btn-play">▶️ Ver Película</button>
+                    </div>
+                    <div id="video-container" style="display: none; margin-top: 20px;">
+                        <iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./categoria.js"></script>
+</body>
+</html>
