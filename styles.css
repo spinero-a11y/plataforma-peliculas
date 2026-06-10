@@ -234,3 +234,40 @@ body {
     color: var(--color-primario);
     font-weight: bold;
 }
+/* CONTENEDOR PARA LAS FLECHAS */
+.slider-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* ESTILO GENERAL DE LAS FLECHAS */
+.arrow-btn {
+    position: absolute;
+    top: 0;
+    bottom: 15px; /* Alineado para ignorar la barra de scroll inferior */
+    width: 50px;
+    background: rgba(18, 15, 14, 0.5);
+    color: var(--color-texto);
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 50;
+    transition: background 0.3s, color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.arrow-btn:hover {
+    background: rgba(18, 15, 14, 0.8);
+    color: var(--color-primario);
+}
+
+.left-arrow { left: -20px; border-radius: 0 4px 4px 0; }
+.right-arrow { right: -20px; border-radius: 4px 0 0 4px; }
+
+/* Ocultar las flechas si no hay suficiente contenido (Opcional) */
+.movies-slider {
+    scroll-behavior: smooth; /* Hace que el deslizamiento sea suave al hacer clic */
+}
