@@ -48,21 +48,25 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="main-layout">
         
-        <!-- SECCIÓN 1: RECOMENDADOS (Películas Populares) -->
         <section class="movie-section">
-            <h2 class="section-title">Recomendados para ti</h2>
-            <div id="contenedor-populares" class="movies-slider">
-                <!-- JS meterá las películas aquí -->
+    <h2 class="section-title" id="titulo-principal">Recomendados para ti</h2>
+    <div class="slider-wrapper">
+        <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-populares', 'izquierda')">&#10094;</button>
+        <div id="contenedor-populares" class="movies-slider">
             </div>
-        </section>
+        <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-populares', 'derecha')">&#10095;</button>
+    </div>
+</section>
 
-        <!-- SECCIÓN 2: TENDENCIAS u OTRAS OPCIONES -->
-        <section class="movie-section">
-            <h2 class="section-title">Tendencias de la semana</h2>
-            <div id="contenedor-tendencias" class="movies-slider">
-                <!-- JS meterá más películas aquí -->
+<section class="movie-section" id="seccion-tendencias">
+    <h2 class="section-title">Tendencias de la semana</h2>
+    <div class="slider-wrapper">
+        <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-tendencias', 'izquierda')">&#10094;</button>
+        <div id="contenedor-tendencias" class="movies-slider">
             </div>
-        </section>
+        <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-tendencias', 'derecha')">&#10095;</button>
+    </div>
+</section>
 
     </main>
 
