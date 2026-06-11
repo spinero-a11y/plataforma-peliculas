@@ -25,23 +25,51 @@ const videoPlayer = document.getElementById('video-player');
 // =========================================================================
 // 2. FUNCIÓN PRINCIPAL PARA OBTENER DATOS DE LA API
 // =========================================================================
+// =========================================================================
+// FUNCIÓN MODIFICADA PARA PRUEBA DE CONEXIÓN LOCAL
+// =========================================================================
 async function cargarSeccion(url, contenedor) {
     try {
-        const respuesta = await fetch(url);
-        const datos = await respuesta.json();
+        // En lugar de hacer un fetch a internet, simulamos la respuesta de la API
+        const datosSimulados = {
+            results: [
+                {
+                    id: '550',
+                    title: 'The Mandalorian and Grogu',
+                    vote_average: 8.5,
+                    poster_path: '/czb7jN4U8W8WuzfVmq686v36YgG.jpg', // Póster real de TMDb
+                    overview: 'Continuación de la serie de Star Wars en formato de película de alta calidad.'
+                },
+                {
+                    id: '27205',
+                    title: 'Origen (Inception)',
+                    vote_average: 8.8,
+                    poster_path: '/edv5CZvClrZ0YgG9jGg87jG9jGg.jpg',
+                    overview: 'Un ladrón que roba secretos corporativos a través del uso de la tecnología de compartir sueños.'
+                },
+                {
+                    id: '157336',
+                    title: 'Interstellar',
+                    vote_average: 8.6,
+                    poster_path: '/gEU2QniE6E77NIbB36vI4XwIQAx.jpg',
+                    overview: 'Un grupo de científicos y exploradores viajan a través de un agujero de gusano.'
+                }
+            ]
+        };
         
-        // Limpiamos el contenedor antes de meter películas
+        // Limpiamos el contenedor
         contenedor.innerHTML = '';
 
-        // Recorremos las películas que nos devuelve la API
-        datos.results.forEach(pelicula => {
+        // Dibujamos las películas simuladas en tu interfaz premium
+        datosSimulados.results.forEach(pelicula => {
             const tarjeta = document.createElement('div');
             tarjeta.classList.add('movie-card');
 
-            const rutaPoster = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
+            // Si no carga la imagen de internet, usamos una de respaldo elegante
+            const rutaPoster = `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`;
 
             tarjeta.innerHTML = `
-                <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')">
+                <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')" onerror="this.src='https://via.placeholder.com/500x750?text=${pelicula.title}'">
                 <div class="movie-info">
                     <h3>${pelicula.title}</h3>
                     <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
@@ -54,7 +82,7 @@ async function cargarSeccion(url, contenedor) {
         });
 
     } catch (error) {
-        console.error("Error al cargar las películas:", error);
+        console.error("Error en la sección simulada:", error);
     }
 }
 
