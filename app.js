@@ -98,48 +98,17 @@ async function cargarSeccion(url, contenedor) {
 // =========================================================================
 async function abrirDetalles(id) {
     try {
-        const urlDetalles = `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`;
-        const respuesta = await fetch(urlDetalles);
-        const pelicula = await respuesta.json();
+        // En lugar de fetch a TMDb, rellenamos con datos directos de prueba
+        document.getElementById('modal-titulo').innerText = "Película Seleccionada";
+        document.getElementById('modal-puntuacion').innerText = `⭐ 8.5 (SofVeria)`;
+        document.getElementById('modal-fecha').innerText = "2026";
+        document.getElementById('modal-sinopsis').innerText = "Disfruta de la mejor experiencia de reproducción en streaming directamente desde tu servidor local en SofVeria.";
 
-        // Rellenamos los textos de la modal
-        document.getElementById('modal-img').src = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
-        document.getElementById('modal-titulo').innerText = pelicula.title;
-        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.vote_average.toFixed(1)} (Reseñas)`;
-        document.getElementById('modal-fecha').innerText = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
-        document.getElementById('modal-sinopsis').innerText = pelicula.overview || "No hay una sinopsis disponible para esta película.";
-
-        // Dejar el contenedor limpio con el iframe original cada vez que se abra una película nueva
+        // Ocultamos el reproductor de video por defecto
         videoContainer.style.display = 'none';
-        videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
 
-        // --- BUSCAR TRÁILER ---
-        const urlVideos = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=es-ES`;
-        const respVideos = await fetch(urlVideos);
-        let datosVideos = await respVideos.json();
-        
-        if (!datosVideos.results || datosVideos.results.length === 0) {
-            const respVideosEng = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
-            datosVideos = await respVideosEng.json();
-        }
-
-        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') 
-                     || datosVideos.results.find(vid => vid.type === 'Teaser' && vid.site === 'YouTube')
-                     || datosVideos.results.find(vid => vid.site === 'YouTube');
-
-        const btnTrailer = document.getElementById('btn-ver-trailer');
-        if (trailer && trailer.key) {
-            btnTrailer.style.display = 'block';
-            btnTrailer.onclick = () => {
-                window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
-            };
-        } else {
-            btnTrailer.style.display = 'none';
-        }
-
-        // --- BOTÓN VER PELÍCULA ---
+        // Lógica automática del botón de Ver Película
         document.getElementById('btn-ver-pelicula').onclick = () => {
-            // Inyectamos el reproductor HTML5 nativo para evitar pantallas negras
             videoContainer.innerHTML = `
                 <video id="video-player-real" controls autoplay style="width:100%; aspect-ratio: 16/9; display:block;">
                     <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
@@ -147,16 +116,16 @@ async function abrirDetalles(id) {
                 </video>
             `;
             videoContainer.style.display = 'block';
-            setTimeout(() => {
-                videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
         };
+
+        // El botón del tráiler lo ocultamos momentáneamente en esta prueba
+        document.getElementById('btn-ver-trailer').style.display = 'none';
 
         // Mostrar la ventana modal
         modal.style.display = 'block';
 
     } catch (error) {
-        console.error("Error al obtener los detalles de la película:", error);
+        console.error("Error en modal local:", error);
     }
 }
 
