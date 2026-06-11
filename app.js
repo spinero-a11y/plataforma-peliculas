@@ -28,52 +28,59 @@ const videoPlayer = document.getElementById('video-player');
 // =========================================================================
 // FUNCIÓN MODIFICADA PARA PRUEBA DE CONEXIÓN LOCAL
 // =========================================================================
+// =========================================================================
+// NUEVA FUNCIÓN INDEPENDIENTE (SIN DEPENDER DE ENLACES DE TMDB)
+// =========================================================================
 async function cargarSeccion(url, contenedor) {
     try {
-        // En lugar de hacer un fetch a internet, simulamos la respuesta de la API
-        const datosSimulados = {
-            results: [
-                {
-                    id: '550',
-                    title: 'The Mandalorian and Grogu',
-                    vote_average: 8.5,
-                    poster_path: '/czb7jN4U8W8WuzfVmq686v36YgG.jpg', // Póster real de TMDb
-                    overview: 'Continuación de la serie de Star Wars en formato de película de alta calidad.'
-                },
-                {
-                    id: '27205',
-                    title: 'Origen (Inception)',
-                    vote_average: 8.8,
-                    poster_path: '/edv5CZvClrZ0YgG9jGg87jG9jGg.jpg',
-                    overview: 'Un ladrón que roba secretos corporativos a través del uso de la tecnología de compartir sueños.'
-                },
-                {
-                    id: '157336',
-                    title: 'Interstellar',
-                    vote_average: 8.6,
-                    poster_path: '/gEU2QniE6E77NIbB36vI4XwIQAx.jpg',
-                    overview: 'Un grupo de científicos y exploradores viajan a través de un agujero de gusano.'
-                }
-            ]
-        };
-        
-        // Limpiamos el contenedor
+        // Creamos nuestro propio catálogo de películas estables con imágenes garantizadas
+        const peliculasSofVeria = [
+            {
+                id: '1',
+                title: 'The Mandalorian and Grogu',
+                vote_average: 8.5,
+                poster: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=500&auto=format&fit=crop'
+            },
+            {
+                id: '2',
+                title: 'Interstellar',
+                vote_average: 8.8,
+                poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=500&auto=format&fit=crop'
+            },
+            {
+                id: '3',
+                title: 'Stranger Things',
+                vote_average: 8.7,
+                poster: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=500&auto=format&fit=crop'
+            },
+            {
+                id: '4',
+                title: 'Blade Runner 2049',
+                vote_average: 8.3,
+                poster: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=500&auto=format&fit=crop'
+            },
+            {
+                id: '5',
+                title: 'Avatar: El Sentido del Agua',
+                vote_average: 7.9,
+                poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=500&auto=format&fit=crop'
+            }
+        ];
+
+        // Limpiamos el contenedor (así quitamos los cuadros oscuros vacíos)
         contenedor.innerHTML = '';
 
-        // Dibujamos las películas simuladas en tu interfaz premium
-        datosSimulados.results.forEach(pelicula => {
+        // Recorremos nuestra lista e inyectamos las tarjetas con portadas reales
+        peliculasSofVeria.forEach(pelicula => {
             const tarjeta = document.createElement('div');
             tarjeta.classList.add('movie-card');
 
-            // Si no carga la imagen de internet, usamos una de respaldo elegante
-            const rutaPoster = `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`;
-
             tarjeta.innerHTML = `
-                <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')" onerror="this.src='https://via.placeholder.com/500x750?text=${pelicula.title}'">
+                <img src="${pelicula.poster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')">
                 <div class="movie-info">
                     <h3>${pelicula.title}</h3>
                     <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
-                    <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
+                    <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${pelicula.poster}', ${pelicula.vote_average})">
                         <span class="material-symbols-outlined">add</span> Mi Lista
                     </button>
                 </div>
@@ -82,7 +89,7 @@ async function cargarSeccion(url, contenedor) {
         });
 
     } catch (error) {
-        console.error("Error en la sección simulada:", error);
+        console.error("Error al cargar el catálogo local:", error);
     }
 }
 
