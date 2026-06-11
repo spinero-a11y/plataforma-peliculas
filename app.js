@@ -173,16 +173,68 @@ window.onclick = (evento) => {
 };
 
 // =========================================================================
-// 6. INICIALIZACIÓN AUTOMÁTICA DEL CATÁLOGO
+// 6. INICIALIZACIÓN AUTOMÁTICA DEL CATÁLOGO MULTICULTURAL
 // =========================================================================
 function inicializarCatalogo() {
     const contenedorPopulares = document.getElementById('contenedor-populares');
     const contenedorTendencias = document.getElementById('contenedor-tendencias');
 
-    // Aquí elegimos palabras clave potentes para llenar tus sliders con películas brutales
-    cargarSeccion('Marvel', contenedorPopulares);   // Rellena recomendados con cine de acción/Marvel
-    cargarSeccion('Star Wars', contenedorTendencias); // Rellena tendencias con la saga espacial
+    // --- Carrusel 1: Recomendados para ti (Mix de Cine Español, Hollywood e Inglés) ---
+    // Buscamos "Madrid" para forzar el cine español y "London" para el británico clásico, combinados con Hollywood
+    cargarSeccionMulticultural(['Hollywood', 'Madrid', 'London'], contenedorPopulares);
+
+    // --- Carrusel 2: Tendencias de la semana (Mix de Anime, K-Dramas, Cine Coreano, Japonés y Tailandés) ---
+    // Palabras clave súper potentes para arrastrar animación y dramas asiáticos de golpe
+    cargarSeccionMulticultural(['Anime', 'Korea', 'Japan', 'Thailand'], contenedorTendencias);
 }
 
+// NUEVA FUNCIÓN INTELIGENTE: Mezcla resultados de varios mundos para que no salga solo un tipo de película
+async function cargarSeccionMulticultural(keywords, contenedor) {
+    try {
+        contenedor.innerHTML = ''; // Limpiamos la caja
+        let peliculasMezcladas = [];
+
+        // Hacemos micro-búsquedas por cada palabra clave para juntar el catálogo global
+        for (const word of keywords) {
+            const url = `https://www.omdbapi.com/?s=${word}&apikey=${API_KEY}&type=movie`;
+            const respuesta = await fetch(url);
+            const datos = await respuesta.json();
+            
+            if (datos.Response === "True") {
+                // Tomamos las primeras 4 películas de cada temática para armar la variedad
+                peliculasMezcladas = peliculasMezcladas.concat(datos.Search.slice(0, 4));
+            }
+        }
+
+        // Ordenamos la lista de forma aleatoria para que cada vez que recargues se vea diferente y fresco
+        peliculasMezcladas.sort(() => 0.5 - Math.random());
+
+        // Dibujamos las tarjetas internacionales en la interfaz
+        peliculasMezcladas.forEach(pelicula => {
+            if (pelicula.Poster === "N/A") return;
+
+            const tarjeta = document.createElement('div');
+            tarjeta.classList.add('movie-card');
+
+            tarjeta.innerHTML = `
+                <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')">
+                <div class="movie-info">
+                    <h3>${pelicula.Title}</h3>
+                    <span>📅 ${pelicula.Year}</span>
+                    <button class="btn-add-list" onclick="guardarEnLista('${pelicula.imdbID}', '${pelicula.Title.replace(/'/g, "\\'")}', '${pelicula.Poster}', 8.5)">
+                        <span class="material-symbols-outlined">add</span> Mi Lista
+                    </button>
+                </div>
+            `;
+            contenedor.appendChild(tarjeta);
+        });
+
+    } catch (error) {
+        console.error("Error al armar la sección multicultural:", error);
+    }
+}
+
+// ¡Arranca la plataforma con tu catálogo global!
+inicializarCatalogo();
 // Arranca la plataforma
 inicializarCatalogo();
