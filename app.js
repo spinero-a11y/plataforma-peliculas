@@ -1,14 +1,11 @@
-// 1. CONFIGURACIÓN INICIAL (Pon tu clave aquí)
+// ==========================================
+// CONFIGURACIÓN DE LA API (¡ESTO DEBE IR PRIMERO!)
+// ==========================================
 const API_KEY = 'b46d1f6c718586ac87e104a286f7f5c6'; 
-
-// Enlaces de la API de TMDb para Películas Populares y Tendencias
 const URL_POPULARES = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=es-ES&page=1`;
-const URL_TENDENCIAS = `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=es-ES`;
+const URL_TENDENCIAS = `https://api.themoviedb.org/3/movie/top_rated?api_key=${API_KEY}&language=es-ES&page=1`;
 const URL_BUSQUEDA = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&language=es-ES&query=`;
-
-// URL base obligatoria de TMDb para poder cargar las imágenes de los pósters
 const URL_IMAGEN = 'https://image.tmdb.org/t/p/w500';
-
 // 2. CAPTURAR LOS CONTENEDORES DEL HTML
 // =========================================================================
 // 1. CONFIGURACIÓN DE LA API Y CAPTURA DE CONTENEDORES (SIEMPRE ARRIBA)
