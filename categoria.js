@@ -1,155 +1,130 @@
-// 1. CONFIGURACIÓN (Usa tu misma API Key real de TMDb)
-const API_KEY = 'b46d1f6c718586ac87e104a286f7f5c6'; 
-const URL_IMAGEN = 'https://image.tmdb.org/t/p/w500';
+// =========================================================================
+// 1. CONFIGURACIÓN DE OMDb API (¡Pon la misma clave que en app.js!)
+// =========================================================================
+const API_KEY = "TU_OMDB_API_KEY_AQUI"; // <-- Pega aquí tu misma clave del correo
 
-// 2. LEER LOS PARÁMETROS DE LA URL (?id=XX&name=YY)
-const parametrosURL = new URLSearchParams(window.location.search);
-const idGenero = parametrosURL.get('id');
-const nombreGenero = parametrosURL.get('name');
-
-// Capturar contenedores del HTML
-const tituloCategoria = document.getElementById('titulo-categoria');
-const contenedorCategoria = document.getElementById('contenedor-categoria');
-
-// Cambiar el título principal de la página con el nombre del género
-if (nombreGenero) {
-    tituloCategoria.innerText = `Películas de ${nombreGenero}`;
-}
-
-// 3. FUNCIÓN PARA CARGAR LAS PELÍCULAS DE ESTE GÉNERO
-async function cargarPeliculasPorGenero() {
-    // URL especial de TMDb para descubrir películas filtradas por género (with_genres)
-    const urlDescubrir = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=es-ES&sort_by=popularity.desc&with_genres=${idGenero}`;
-
-    try {
-        const respuesta = await fetch(urlDescubrir);
-        const datos = await respuesta.json();
-
-        contenedorCategoria.innerHTML = '';
-
-        datos.results.forEach(pelicula => {
-            const tarjeta = document.createElement('div');
-            tarjeta.classList.add('movie-card');
-            tarjeta.style.position = 'relative';
-
-            const rutaPoster = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
-
-            tarjeta.innerHTML = `
-                <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')">
-                <div class="movie-info-fav" style="padding: 10px; background: #1a1615;">
-                    <h3 style="font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pelicula.title}</h3>
-                    <span style="color: var(--color-primario); font-size: 11px;">⭐ ${pelicula.vote_average.toFixed(1)}</span>
-                </div>
-            `;
-            contenedorCategoria.appendChild(tarjeta);
-        });
-    } catch (error) {
-        console.error("Error al cargar las películas de la categoría:", error);
-    }
-}
-
-// 4. LÓGICA DE LA MODAL (Reutilizada para poder ver trailers aquí también)
-// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
 const modal = document.getElementById('movie-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const videoContainer = document.getElementById('video-container');
-const videoPlayer = document.getElementById('video-player');
+const contenedorCategorias = document.getElementById('contenedor-populares'); // Reutilizamos tu caja principal
 
-async function abrirDetalles(id) {
+// =========================================================================
+// 2. FUNCIÓN PARA CARGAR PELÍCULAS POR EL GÉNERO SELECCIONADO
+// =========================================================================
+async function cargarPeliculasPorGenero() {
     try {
-        const urlDetalles = `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`;
-        const respuesta = await fetch(urlDetalles);
+        // 1. Leemos qué categoría quiere ver el usuario desde la barra de direcciones de la web
+        const parametros = new URLSearchParams(window.location.search);
+        let genero = parametros.get('id') || 'Action'; // Si no hay nada, por defecto carga Acción
+
+        const tituloPrincipal = document.getElementById('titulo-principal');
+        if (tituloPrincipal) {
+            tituloPrincipal.innerText = `Categoría: ${genero.toUpperCase()}`;
+        }
+
+        // 2. Buscamos películas de Hollywood que correspondan a esa palabra clave
+        const url = `https://www.omdbapi.com/?s=${genero}&apikey=${API_KEY}&type=movie`;
+        const respuesta = await fetch(url);
+        const datos = await respuesta.json();
+
+        if (!contenedorCategorias) return;
+        contenedorCategorias.innerHTML = '';
+
+        if (datos.Response === "True") {
+            datos.Search.forEach(pelicula => {
+                if (pelicula.Poster === "N/A") return;
+
+                const tarjeta = document.createElement('div');
+                tarjeta.classList.add('movie-card');
+
+                tarjeta.innerHTML = `
+                    <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')">
+                    <div class="movie-info">
+                        <h3>${pelicula.Title}</h3>
+                        <span>📅 ${pelicula.Year}</span>
+                        <button class="btn-add-list" onclick="guardarEnLista('${pelicula.imdbID}', '${pelicula.Title.replace(/'/g, "\\'")}', '${pelicula.Poster}', 8.5)">
+                            <span class="material-symbols-outlined">add</span> Mi Lista
+                        </button>
+                    </div>
+                `;
+                contenedorCategorias.appendChild(tarjeta);
+            });
+        } else {
+            contenedorCategorias.innerHTML = `<p class="error-msg">No se encontraron películas para esta categoría por el momento.</p>`;
+        }
+    } catch (error) {
+        console.error("Error al cargar la categoría en OMDb:", error);
+    }
+}
+
+// =========================================================================
+// 3. FUNCIÓN PARA ABRIR LA MODAL EN CATEGORÍAS (IMDb ID)
+// =========================================================================
+async function abrirDetalles(imdbID) {
+    try {
+        const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${API_KEY}&plot=full`;
+        const respuesta = await fetch(url);
         const pelicula = await respuesta.json();
 
-        document.getElementById('modal-img').src = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
-        document.getElementById('modal-titulo').innerText = pelicula.title;
-        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.vote_average.toFixed(1)} (Reseñas)`;
-        document.getElementById('modal-fecha').innerText = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
-        document.getElementById('modal-sinopsis').innerText = pelicula.overview || "No hay una sinopsis disponible.";
+        document.getElementById('modal-img').src = pelicula.Poster !== "N/A" ? pelicula.Poster : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
+        document.getElementById('modal-titulo').innerText = pelicula.Title;
+        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.imdbRating} (IMDb)`;
+        document.getElementById('modal-fecha').innerText = pelicula.Year;
+        document.getElementById('modal-sinopsis').innerText = pelicula.Plot !== "N/A" ? pelicula.Plot : "Sinopsis no disponible.";
 
         videoContainer.style.display = 'none';
-        videoPlayer.src = '';
 
-        // 3. Buscar el Tráiler oficial en YouTube a través de la API de TMDb
-        const urlVideos = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=es-ES`;
-        const respVideos = await fetch(urlVideos);
-        let datosVideos = await respVideos.json();
-        
-        // Truco Pro: Si no encuentra videos en español, le pedimos a la API los videos en inglés (originales)
-        if (!datosVideos.results || datosVideos.results.length === 0) {
-            const respVideosEng = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
-            datosVideos = await respVideosEng.json();
-        }
-
-        // Filtramos buscando un video que sea exactamente un "Trailer" y esté alojado en "YouTube"
-        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') 
-                     || datosVideos.results.find(vid => vid.type === 'Teaser' && vid.site === 'YouTube')
-                     || datosVideos.results.find(vid => vid.site === 'YouTube'); // Cualquier video de YouTube si no hay trailer oficial
-
-        const btnTrailer = document.getElementById('btn-ver-trailer');
-        
-        if (trailer && trailer.key) {
-            btnTrailer.style.display = 'block';
-            btnTrailer.onclick = () => {
-                // Opción A: Abrir directamente en una pestaña nueva de YouTube (100% libre de errores)
-                window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
-                
-                /* 
-                // Opción B: Si prefieres seguir intentándolo dentro de la web, usa esta URL simplificada sin bloqueos:
-                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
-                videoContainer.style.display = 'block';
-                setTimeout(() => {
-                    videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-                */
-            };
-        } else {
-            btnTrailer.style.display = 'none';
-        }
-
-        // Configurar acción al presionar "Ver Película" (Reproductor Cinemático Activo)
-       // Configurar acción al presionar "Ver Película"
         document.getElementById('btn-ver-pelicula').onclick = () => {
-            // 1. En lugar de usar el iframe rígido, inyectamos un reproductor de video nativo de HTML5
-            // Esto le da al navegador el control total para poner play, volumen y pantalla completa
             videoContainer.innerHTML = `
                 <video id="video-player-real" controls autoplay style="width:100%; aspect-ratio: 16/9; display:block;">
                     <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
                     Tu navegador no soporta reproducción de video.
                 </video>
             `;
-            
-            // 2. Mostramos el contenedor
             videoContainer.style.display = 'block';
-            
-            // 3. Scroll suave para centrar la pantalla en el cine
             setTimeout(() => {
                 videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
         };
 
+        document.getElementById('btn-ver-trailer').style.display = 'none';
         modal.style.display = 'block';
+
     } catch (error) {
-        console.error("Error al abrir los detalles:", error);
+        console.error("Error al abrir detalles en categorías:", error);
     }
 }
 
+// =========================================================================
+// 4. EVENTOS DE CIERRE Y AUXILIARES
+// =========================================================================
+if (closeModalBtn) {
+    closeModalBtn.onclick = () => {
+        modal.style.display = 'none';
+        videoContainer.style.display = 'none';
+        videoContainer.innerHTML = '';
+    };
+}
 
-// Cerrar la ventana al pulsar en la (X)
-closeModalBtn.onclick = () => {
-    modal.style.display = 'none';
-    videoContainer.style.display = 'none';
-    videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
-};
-
-// Cerrar si hace clic afuera
 window.onclick = (evento) => {
     if (evento.target === modal) {
         modal.style.display = 'none';
         videoContainer.style.display = 'none';
-        videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
+        videoContainer.innerHTML = '';
     }
 };
 
-// Inicializar la carga al entrar a la página
+function guardarEnLista(id, titulo, poster, voto) {
+    let listaFavoritos = JSON.parse(localStorage.getItem('sofveria_favoritos')) || [];
+    const existe = listaFavoritos.some(p => p.id === id);
+    if (!existe) {
+        listaFavoritos.push({ id, titulo, poster, voto });
+        localStorage.setItem('sofveria_favoritos', JSON.stringify(listaFavoritos));
+        alert(`"${titulo}" se ha añadido a Mi Lista.`);
+    } else {
+        alert("Esta película ya está en tu lista.");
+    }
+}
+
+// Arrancar la carga de la categoría activa
 cargarPeliculasPorGenero();
