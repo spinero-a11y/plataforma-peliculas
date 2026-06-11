@@ -10,11 +10,24 @@ const URL_BUSQUEDA = `https://api.themoviedb.org/3/search/movie?api_key=${API_KE
 const URL_IMAGEN = 'https://image.tmdb.org/t/p/w500';
 
 // 2. CAPTURAR LOS CONTENEDORES DEL HTML
+// =========================================================================
+// 1. CONFIGURACIÓN DE LA API Y CAPTURA DE CONTENEDORES (SIEMPRE ARRIBA)
+// =========================================================================
+// (Asegúrate de que tus constantes de las URLs y API_KEY estén declaradas aquí arriba)
+
 const contenedorPopulares = document.getElementById('contenedor-populares');
 const contenedorTendencias = document.getElementById('contenedor-tendencias');
 const inputBusqueda = document.getElementById('input-busqueda');
 
-// 3. FUNCIÓN PRINCIPAL PARA OBTENER DATOS
+// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
+const modal = document.getElementById('movie-modal');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const videoContainer = document.getElementById('video-container');
+const videoPlayer = document.getElementById('video-player');
+
+// =========================================================================
+// 2. FUNCIÓN PRINCIPAL PARA OBTENER DATOS DE LA API
+// =========================================================================
 async function cargarSeccion(url, contenedor) {
     try {
         const respuesta = await fetch(url);
@@ -23,28 +36,23 @@ async function cargarSeccion(url, contenedor) {
         // Limpiamos el contenedor antes de meter películas
         contenedor.innerHTML = '';
 
-        // Recorremos las 20 películas que nos devuelve la API
+        // Recorremos las películas que nos devuelve la API
         datos.results.forEach(pelicula => {
-            // Creamos un div para la tarjeta de la película
             const tarjeta = document.createElement('div');
             tarjeta.classList.add('movie-card');
 
-            // Si la película no tiene póster, usamos una imagen por defecto
             const rutaPoster = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
 
-          tarjeta.innerHTML = `
-             <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')">
-              <div class="movie-info">
-               <h3>${pelicula.title}</h3>
-             <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
-              <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
-               <span class="material-symbols-outlined">add</span> Mi Lista
-              </button>
-             </div>
+            tarjeta.innerHTML = `
+                <img src="${rutaPoster}" alt="${pelicula.title}" onclick="abrirDetalles('${pelicula.id}')">
+                <div class="movie-info">
+                    <h3>${pelicula.title}</h3>
+                    <span>⭐ ${pelicula.vote_average.toFixed(1)}</span>
+                    <button class="btn-add-list" onclick="guardarEnLista('${pelicula.id}', '${pelicula.title.replace(/'/g, "\\'")}', '${rutaPoster}', ${pelicula.vote_average})">
+                        <span class="material-symbols-outlined">add</span> Mi Lista
+                    </button>
+                </div>
             `;
-        
-
-            // Añadimos la tarjeta al contenedor correspondiente
             contenedor.appendChild(tarjeta);
         });
 
@@ -53,7 +61,77 @@ async function cargarSeccion(url, contenedor) {
     }
 }
 
-// PROGRAMAR EL BUSCADOR INTELIGENTE
+// =========================================================================
+// 3. FUNCIÓN PARA ABRIR LA MODAL Y REPRODUCIR (TRÁILER / PELÍCULA)
+// =========================================================================
+async function abrirDetalles(id) {
+    try {
+        const urlDetalles = `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`;
+        const respuesta = await fetch(urlDetalles);
+        const pelicula = await respuesta.json();
+
+        // Rellenamos los textos de la modal
+        document.getElementById('modal-img').src = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
+        document.getElementById('modal-titulo').innerText = pelicula.title;
+        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.vote_average.toFixed(1)} (Reseñas)`;
+        document.getElementById('modal-fecha').innerText = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
+        document.getElementById('modal-sinopsis').innerText = pelicula.overview || "No hay una sinopsis disponible para esta película.";
+
+        // Dejar el contenedor limpio con el iframe original cada vez que se abra una película nueva
+        videoContainer.style.display = 'none';
+        videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
+
+        // --- BUSCAR TRÁILER ---
+        const urlVideos = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=es-ES`;
+        const respVideos = await fetch(urlVideos);
+        let datosVideos = await respVideos.json();
+        
+        if (!datosVideos.results || datosVideos.results.length === 0) {
+            const respVideosEng = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
+            datosVideos = await respVideosEng.json();
+        }
+
+        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') 
+                     || datosVideos.results.find(vid => vid.type === 'Teaser' && vid.site === 'YouTube')
+                     || datosVideos.results.find(vid => vid.site === 'YouTube');
+
+        const btnTrailer = document.getElementById('btn-ver-trailer');
+        if (trailer && trailer.key) {
+            btnTrailer.style.display = 'block';
+            btnTrailer.onclick = () => {
+                window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
+            };
+        } else {
+            btnTrailer.style.display = 'none';
+        }
+
+        // --- BOTÓN VER PELÍCULA ---
+        document.getElementById('btn-ver-pelicula').onclick = () => {
+            // Inyectamos el reproductor HTML5 nativo para evitar pantallas negras
+            videoContainer.innerHTML = `
+                <video id="video-player-real" controls autoplay style="width:100%; aspect-ratio: 16/9; display:block;">
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                    Tu navegador no soporta reproducción de video.
+                </video>
+            `;
+            videoContainer.style.display = 'block';
+            setTimeout(() => {
+                videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        };
+
+        // Mostrar la ventana modal
+        modal.style.display = 'block';
+
+    } catch (error) {
+        console.error("Error al obtener los detalles de la película:", error);
+    }
+}
+
+// =========================================================================
+// 4. FUNCIONES AUXILIARES (BUSCADOR, CARRUSEL, FAVORITOS Y MENÚ)
+// =========================================================================
+// Programar el Buscador Inteligente
 inputBusqueda.addEventListener('input', (evento) => {
     const textoBusqueda = evento.target.value.trim();
     const titulo = document.getElementById('titulo-principal');
@@ -61,22 +139,18 @@ inputBusqueda.addEventListener('input', (evento) => {
 
     if (textoBusqueda.length > 0) {
         titulo.innerText = `Resultados para: "${textoBusqueda}"`;
-        seccionTendencias.style.display = 'none'; // Oculta la fila de tendencias
+        seccionTendencias.style.display = 'none'; 
         cargarSeccion(`${URL_BUSQUEDA}${textoBusqueda}`, contenedorPopulares);
     } else {
         titulo.innerText = "Recomendados para ti";
-        seccionTendencias.style.display = 'block'; // Muestra las tendencias de nuevo
+        seccionTendencias.style.display = 'block'; 
         cargarSeccion(URL_POPULARES, contenedorPopulares);
     }
 });
 
-// 5. INICIALIZAR LA PÁGINA (Cargar las listas al abrir la web)
-cargarSeccion(URL_POPULARES, contenedorPopulares);
-cargarSeccion(URL_TENDENCIAS, contenedorTendencias);
 // Función para mover el carrusel con las flechas
 function deslizar(idContenedor, direccion) {
     const contenedor = document.getElementById(idContenedor);
-    // Calculamos cuánto se moverá (el ancho de unas 3 tarjetas aprox)
     const distanciaX = 500; 
 
     if (direccion === 'izquierda') {
@@ -85,10 +159,11 @@ function deslizar(idContenedor, direccion) {
         contenedor.scrollLeft += distanciaX;
     }
 }
+
 // Activar botones del Menú
 document.getElementById('btn-inicio').addEventListener('click', (e) => {
     e.preventDefault();
-    inputBusqueda.value = ''; // Limpia el buscador si había texto
+    inputBusqueda.value = ''; 
     document.getElementById('titulo-principal').innerText = "Recomendados para ti";
     document.getElementById('seccion-tendencias').style.display = 'block';
     cargarSeccion(URL_POPULARES, contenedorPopulares);
@@ -96,132 +171,33 @@ document.getElementById('btn-inicio').addEventListener('click', (e) => {
 
 document.getElementById('btn-recomendados').addEventListener('click', (e) => {
     e.preventDefault();
-    // Te desplaza suavemente hacia abajo hasta la sección si la página es muy larga
     document.getElementById('titulo-principal').scrollIntoView({ behavior: 'smooth' });
 });
-// Función para guardar películas en el almacenamiento local (LocalStorage)
-function guardarEnLista(id, titulo, poster, voto) {
-    // 1. Obtener la lista actual de películas guardadas (si no hay ninguna, empezamos con un arreglo vacío)
-    let listaFavoritos = JSON.parse(localStorage.getItem('sofveria_favoritos')) || [];
 
-    // 2. Comprobar si la película ya estaba agregada para no repetirla
+// Guardar en favoritos (LocalStorage)
+function guardarEnLista(id, titulo, poster, voto) {
+    let listaFavoritos = JSON.parse(localStorage.getItem('sofveria_favoritos')) || [];
     const existe = listaFavoritos.some(p => p.id === id);
 
     if (!existe) {
-        // 3. Si no existe, creamos el objeto de la película y lo sumamos a la lista
         const nuevaPelicula = { id, titulo, poster, voto };
         listaFavoritos.push(nuevaPelicula);
-        
-        // 4. Guardamos la lista actualizada de vuelta en el navegador transformándola en texto
         localStorage.setItem('sofveria_favoritos', JSON.stringify(listaFavoritos));
         alert(`"${titulo}" se ha añadido a Mi Lista.`);
     } else {
         alert("Esta película ya está en tu lista.");
     }
 }
-// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
-// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
-const modal = document.getElementById('movie-modal');
-const closeModalBtn = document.getElementById('close-modal-btn');
 
-// ¡OJO AQUÍ! Asegúrate de que apunte exactamente a 'video-container'
-const videoContainer = document.getElementById('video-container');
-const videoPlayer = document.getElementById('video-player');
-
-// Función que se activa al hacer clic en una película
-async function abrirDetalles(id) {
-    try {
-        // 1. Pedimos los datos completos de la película a TMDb usando su ID
-        const urlDetalles = `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=es-ES`;
-        const respuesta = await fetch(urlDetalles);
-        const pelicula = await respuesta.json();
-
-        // 2. Rellenamos los textos de la modal
-        document.getElementById('modal-img').src = pelicula.poster_path ? `${URL_IMAGEN}${pelicula.poster_path}` : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
-        document.getElementById('modal-titulo').innerText = pelicula.title;
-        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.vote_average.toFixed(1)} (Reseñas)`;
-        document.getElementById('modal-fecha').innerText = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
-        document.getElementById('modal-sinopsis').innerText = pelicula.overview || "No hay una sinopsis disponible para esta película.";
-
-        // Ocultamos el reproductor de video por defecto cada vez que abrimos una película nueva
-        videoContainer.style.display = 'none';
-        videoPlayer.src = '';
-
-       // 3. Buscar el Tráiler oficial en YouTube a través de la API de TMDb
-        const urlVideos = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=es-ES`;
-        const respVideos = await fetch(urlVideos);
-        let datosVideos = await respVideos.json();
-        
-        // Truco Pro: Si no encuentra videos en español, le pedimos a la API los videos en inglés (originales)
-        if (!datosVideos.results || datosVideos.results.length === 0) {
-            const respVideosEng = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
-            datosVideos = await respVideosEng.json();
-        }
-
-        // Filtramos buscando un video que sea exactamente un "Trailer" y esté alojado en "YouTube"
-        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') 
-                     || datosVideos.results.find(vid => vid.type === 'Teaser' && vid.site === 'YouTube')
-                     || datosVideos.results.find(vid => vid.site === 'YouTube'); // Cualquier video de YouTube si no hay trailer oficial
-
-        const btnTrailer = document.getElementById('btn-ver-trailer');
-        
-        if (trailer && trailer.key) {
-            btnTrailer.style.display = 'block';
-            btnTrailer.onclick = () => {
-                // Opción A: Abrir directamente en una pestaña nueva de YouTube (100% libre de errores)
-                window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
-                
-                /* 
-                // Opción B: Si prefieres seguir intentándolo dentro de la web, usa esta URL simplificada sin bloqueos:
-                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
-                videoContainer.style.display = 'block';
-                setTimeout(() => {
-                    videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-                */
-            };
-        } else {
-            btnTrailer.style.display = 'none';
-        }
-
-      // Configurar acción al presionar "Ver Película" (Reproductor Cinemático Activo)
-       // Configurar acción al presionar "Ver Película"
-        document.getElementById('btn-ver-pelicula').onclick = () => {
-            // 1. En lugar de usar el iframe rígido, inyectamos un reproductor de video nativo de HTML5
-            // Esto le da al navegador el control total para poner play, volumen y pantalla completa
-            videoContainer.innerHTML = `
-                <video id="video-player-real" controls autoplay style="width:100%; aspect-ratio: 16/9; display:block;">
-                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
-                    Tu navegador no soporta reproducción de video.
-                </video>
-            `;
-            
-            // 2. Mostramos el contenedor
-            videoContainer.style.display = 'block';
-            
-            // 3. Scroll suave para centrar la pantalla en el cine
-            setTimeout(() => {
-                videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        };
-        // 4. Mostramos la ventana modal quitando el display oculto
-        modal.style.display = 'block';
-
-    } catch (error) {
-        console.error("Error al obtener los detalles de la película:", error);
-    }
-}
-
-// Cerrar la ventana al pulsar en la (X)
-// Cerrar la ventana al pulsar en la (X)
-// Cerrar la ventana al pulsar en la (X)
+// =========================================================================
+// 5. EVENTOS DE CIERRE DE LA VENTANA MODAL
+// =========================================================================
 closeModalBtn.onclick = () => {
     modal.style.display = 'none';
     videoContainer.style.display = 'none';
     videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
 };
 
-// Cerrar si hace clic afuera
 window.onclick = (evento) => {
     if (evento.target === modal) {
         modal.style.display = 'none';
@@ -229,3 +205,9 @@ window.onclick = (evento) => {
         videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
     }
 };
+
+// =========================================================================
+// 6. INICIALIZAR LA PÁGINA (SIEMPRE AL FINAL DEL TODO)
+// =========================================================================
+cargarSeccion(URL_POPULARES, contenedorPopulares);
+cargarSeccion(URL_TENDENCIAS, contenedorTendencias);
