@@ -49,6 +49,7 @@ async function cargarPeliculasPorGenero() {
 }
 
 // 4. LÓGICA DE LA MODAL (Reutilizada para poder ver trailers aquí también)
+// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
 const modal = document.getElementById('movie-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const videoContainer = document.getElementById('video-container');
@@ -133,10 +134,10 @@ async function abrirDetalles(id) {
     }
 }
 
+
 // Cerrar la ventana al pulsar en la (X)
 closeModalBtn.onclick = () => {
     modal.style.display = 'none';
-    // Devolvemos el contenedor a su estado limpio con el iframe original para la siguiente película
     videoContainer.style.display = 'none';
     videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
 };

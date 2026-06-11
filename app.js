@@ -120,8 +120,11 @@ function guardarEnLista(id, titulo, poster, voto) {
     }
 }
 // CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
+// CONTROL DE LA VENTANA MODAL Y REPRODUCTOR
 const modal = document.getElementById('movie-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
+
+// ¡OJO AQUÍ! Asegúrate de que apunte exactamente a 'video-container'
 const videoContainer = document.getElementById('video-container');
 const videoPlayer = document.getElementById('video-player');
 
@@ -211,9 +214,9 @@ async function abrirDetalles(id) {
 
 // Cerrar la ventana al pulsar en la (X)
 // Cerrar la ventana al pulsar en la (X)
+// Cerrar la ventana al pulsar en la (X)
 closeModalBtn.onclick = () => {
     modal.style.display = 'none';
-    // Devolvemos el contenedor a su estado limpio con el iframe original para la siguiente película
     videoContainer.style.display = 'none';
     videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
 };
@@ -224,13 +227,5 @@ window.onclick = (evento) => {
         modal.style.display = 'none';
         videoContainer.style.display = 'none';
         videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
-    }
-};
-
-// Cerrar la ventana automáticamente si el usuario hace clic fuera de la caja central
-window.onclick = (evento) => {
-    if (evento.target === modal) {
-        modal.style.display = 'none';
-        videoPlayer.src = '';
     }
 };
