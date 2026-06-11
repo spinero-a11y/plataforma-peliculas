@@ -69,19 +69,38 @@ async function abrirDetalles(id) {
         videoContainer.style.display = 'none';
         videoPlayer.src = '';
 
+        // 3. Buscar el Tráiler oficial en YouTube a través de la API de TMDb
         const urlVideos = `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}&language=es-ES`;
         const respVideos = await fetch(urlVideos);
-        const datosVideos = await respVideos.json();
-        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') || datosVideos.results.find(vid => vid.site === 'YouTube');
+        let datosVideos = await respVideos.json();
+        
+        // Truco Pro: Si no encuentra videos en español, le pedimos a la API los videos en inglés (originales)
+        if (!datosVideos.results || datosVideos.results.length === 0) {
+            const respVideosEng = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${API_KEY}`);
+            datosVideos = await respVideosEng.json();
+        }
+
+        // Filtramos buscando un video que sea exactamente un "Trailer" y esté alojado en "YouTube"
+        const trailer = datosVideos.results.find(vid => vid.type === 'Trailer' && vid.site === 'YouTube') 
+                     || datosVideos.results.find(vid => vid.type === 'Teaser' && vid.site === 'YouTube')
+                     || datosVideos.results.find(vid => vid.site === 'YouTube'); // Cualquier video de YouTube si no hay trailer oficial
 
         const btnTrailer = document.getElementById('btn-ver-trailer');
-        if (trailer) {
+        
+        if (trailer && trailer.key) {
             btnTrailer.style.display = 'block';
             btnTrailer.onclick = () => {
-                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+                // Usamos la URL correcta de incrustación (embed) de YouTube
+                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&modestbranding=1&rel=0`;
                 videoContainer.style.display = 'block';
+                
+                // Hace un scroll suave automático hacia el reproductor para que el usuario no tenga que bajar manualmente
+                setTimeout(() => {
+                    videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
             };
         } else {
+            // Si la película de plano no tiene ningún video registrado en TMDb, ocultamos el botón
             btnTrailer.style.display = 'none';
         }
 

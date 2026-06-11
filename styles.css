@@ -435,3 +435,17 @@ body {
     transform: scale(1.04);
     box-shadow: 0 4px 15px rgba(223, 158, 62, 0.4);
 }
+/* DISEÑO PREMIUM PARA EL CONTENEDOR DE YOUTUBE */
+#video-container {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(223, 158, 62, 0.3); /* Borde dorado sutil */
+    background-color: #000;
+}
+
+#video-player {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9; /* Mantiene la proporción clásica de cine/TV */
+}
