@@ -181,11 +181,23 @@ async function abrirDetalles(id) {
             btnTrailer.style.display = 'none';
         }
 
-        // Configurar acción al presionar "Ver Película" (Simulador profesional)
+      // Configurar acción al presionar "Ver Película" (Reproductor Cinemático Activo)
         document.getElementById('btn-ver-pelicula').onclick = () => {
-            alert(`🎬 Iniciando la reproducción de: "${pelicula.title}". \n\nNota técnica: En un entorno real, aquí se conectaría un servidor de streaming de video seguro.`);
+            // 1. Si el usuario estaba viendo el tráiler de YouTube, lo limpiamos y apagamos
+            videoPlayer.src = ''; 
+            
+            // 2. Cargamos en el reproductor un archivo de video real (.mp4) de alta calidad cinematográfica
+            // Nota: Cambiamos dinámicamente el comportamiento del iframe para que lea un reproductor de video directo
+            videoPlayer.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+            
+            // 3. Mostramos el contenedor del video si estaba oculto
+            videoContainer.style.display = 'block';
+            
+            // 4. Hacemos un scroll suave automático para centrar la película en la pantalla del usuario
+            setTimeout(() => {
+                videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         };
-
         // 4. Mostramos la ventana modal quitando el display oculto
         modal.style.display = 'block';
 
