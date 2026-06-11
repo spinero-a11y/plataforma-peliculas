@@ -1,38 +1,51 @@
 // =========================================================================
-// 1. CONFIGURACIÓN DE OMDb API (¡Pon la misma clave que en app.js!)
+// 1. CONFIGURACIÓN DE OMDb API (Pon la misma clave que usaste en app.js)
 // =========================================================================
-const API_KEY = "TU_OMDB_API_KEY_AQUI"; // <-- Pega aquí tu misma clave del correo
+const API_KEY = "ce3f855f"; // <-- Pega aquí tu clave del correo
 
 const modal = document.getElementById('movie-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const videoContainer = document.getElementById('video-container');
-const contenedorCategorias = document.getElementById('contenedor-populares'); // Reutilizamos tu caja principal
+
+// Capturamos el contenedor principal de la página de categorías
+const contenedorCategorias = document.getElementById('contenedor-populares'); 
+
+// Diccionario estético para mostrar los títulos bonitos en español en la pantalla
+const nombresTraducidos = {
+    'spain': 'Cine Español',
+    'anime': 'Anime Japonés',
+    'korean': 'K-Drama / Cine Coreano',
+    'thailand': 'Cine Tailandés',
+    'hollywood': 'Éxitos de Hollywood',
+    'british': 'Cine Británico'
+};
 
 // =========================================================================
-// 2. FUNCIÓN PARA CARGAR PELÍCULAS POR EL GÉNERO SELECCIONADO
+// 2. FUNCIÓN PARA CARGAR LAS PELÍCULAS INTERNACIONALES
 // =========================================================================
 async function cargarPeliculasPorGenero() {
     try {
-        // 1. Leemos qué categoría quiere ver el usuario desde la barra de direcciones de la web
+        // 1. Leemos la palabra clave que viene en la URL (?id=anime, ?id=spain, etc.)
         const parametros = new URLSearchParams(window.location.search);
-        let genero = parametros.get('id') || 'Action'; // Si no hay nada, por defecto carga Acción
+        let genero = parametros.get('id') || 'hollywood'; // Si no hay ninguno, por defecto Hollywood
 
+        // 2. Cambiamos el título principal de la pantalla de forma bonita
         const tituloPrincipal = document.getElementById('titulo-principal');
         if (tituloPrincipal) {
-            tituloPrincipal.innerText = `Categoría: ${genero.toUpperCase()}`;
+            tituloPrincipal.innerText = nombresTraducidos[genero.toLowerCase()] || `Categoría: ${genero.toUpperCase()}`;
         }
 
-        // 2. Buscamos películas de Hollywood que correspondan a esa palabra clave
+        // 3. Hacemos la petición limpia a OMDb API
         const url = `https://www.omdbapi.com/?s=${genero}&apikey=${API_KEY}&type=movie`;
         const respuesta = await fetch(url);
         const datos = await respuesta.json();
 
         if (!contenedorCategorias) return;
-        contenedorCategorias.innerHTML = '';
+        contenedorCategorias.innerHTML = ''; // Limpiamos el "Cargando..." o pantalla vacía
 
         if (datos.Response === "True") {
             datos.Search.forEach(pelicula => {
-                if (pelicula.Poster === "N/A") return;
+                if (pelicula.Poster === "N/A") return; // Saltamos películas sin póster
 
                 const tarjeta = document.createElement('div');
                 tarjeta.classList.add('movie-card');
@@ -50,15 +63,15 @@ async function cargarPeliculasPorGenero() {
                 contenedorCategorias.appendChild(tarjeta);
             });
         } else {
-            contenedorCategorias.innerHTML = `<p class="error-msg">No se encontraron películas para esta categoría por el momento.</p>`;
+            contenedorCategorias.innerHTML = `<p class="error-msg">No se encontraron películas para esta categoría.</p>`;
         }
     } catch (error) {
-        console.error("Error al cargar la categoría en OMDb:", error);
+        console.error("Error al cargar la categoría internacional:", error);
     }
 }
 
 // =========================================================================
-// 3. FUNCIÓN PARA ABRIR LA MODAL EN CATEGORÍAS (IMDb ID)
+// 3. FUNCIÓN PARA ABRIR LA VENTANA MODAL (REPRODUCTOR DE CINE)
 // =========================================================================
 async function abrirDetalles(imdbID) {
     try {
@@ -96,7 +109,7 @@ async function abrirDetalles(imdbID) {
 }
 
 // =========================================================================
-// 4. EVENTOS DE CIERRE Y AUXILIARES
+// 4. EVENTOS DE CIERRE Y LOCALSTORAGE
 // =========================================================================
 if (closeModalBtn) {
     closeModalBtn.onclick = () => {
@@ -126,5 +139,5 @@ function guardarEnLista(id, titulo, poster, voto) {
     }
 }
 
-// Arrancar la carga de la categoría activa
+// Ejecutar la carga al entrar a la página
 cargarPeliculasPorGenero();
