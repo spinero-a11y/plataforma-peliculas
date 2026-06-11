@@ -182,18 +182,21 @@ async function abrirDetalles(id) {
         }
 
       // Configurar acción al presionar "Ver Película" (Reproductor Cinemático Activo)
+       // Configurar acción al presionar "Ver Película"
         document.getElementById('btn-ver-pelicula').onclick = () => {
-            // 1. Si el usuario estaba viendo el tráiler de YouTube, lo limpiamos y apagamos
-            videoPlayer.src = ''; 
+            // 1. En lugar de usar el iframe rígido, inyectamos un reproductor de video nativo de HTML5
+            // Esto le da al navegador el control total para poner play, volumen y pantalla completa
+            videoContainer.innerHTML = `
+                <video id="video-player-real" controls autoplay style="width:100%; aspect-ratio: 16/9; display:block;">
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                    Tu navegador no soporta reproducción de video.
+                </video>
+            `;
             
-            // 2. Cargamos en el reproductor un archivo de video real (.mp4) de alta calidad cinematográfica
-            // Nota: Cambiamos dinámicamente el comportamiento del iframe para que lea un reproductor de video directo
-            videoPlayer.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-            
-            // 3. Mostramos el contenedor del video si estaba oculto
+            // 2. Mostramos el contenedor
             videoContainer.style.display = 'block';
             
-            // 4. Hacemos un scroll suave automático para centrar la película en la pantalla del usuario
+            // 3. Scroll suave para centrar la pantalla en el cine
             setTimeout(() => {
                 videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
@@ -207,9 +210,21 @@ async function abrirDetalles(id) {
 }
 
 // Cerrar la ventana al pulsar en la (X)
+// Cerrar la ventana al pulsar en la (X)
 closeModalBtn.onclick = () => {
     modal.style.display = 'none';
-    videoPlayer.src = ''; // Apaga el video de YouTube para que no siga sonando de fondo
+    // Devolvemos el contenedor a su estado limpio con el iframe original para la siguiente película
+    videoContainer.style.display = 'none';
+    videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
+};
+
+// Cerrar si hace clic afuera
+window.onclick = (evento) => {
+    if (evento.target === modal) {
+        modal.style.display = 'none';
+        videoContainer.style.display = 'none';
+        videoContainer.innerHTML = `<iframe id="video-player" width="100%" height="315" src="" frameborder="0" allowfullscreen></iframe>`;
+    }
 };
 
 // Cerrar la ventana automáticamente si el usuario hace clic fuera de la caja central
