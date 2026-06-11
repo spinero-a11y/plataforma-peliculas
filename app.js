@@ -165,17 +165,19 @@ async function abrirDetalles(id) {
         if (trailer && trailer.key) {
             btnTrailer.style.display = 'block';
             btnTrailer.onclick = () => {
-                // Usamos la URL correcta de incrustación (embed) de YouTube
-                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}?autoplay=1&modestbranding=1&rel=0`;
-                videoContainer.style.display = 'block';
+                // Opción A: Abrir directamente en una pestaña nueva de YouTube (100% libre de errores)
+                window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
                 
-                // Hace un scroll suave automático hacia el reproductor para que el usuario no tenga que bajar manualmente
+                /* 
+                // Opción B: Si prefieres seguir intentándolo dentro de la web, usa esta URL simplificada sin bloqueos:
+                videoPlayer.src = `https://www.youtube.com/embed/${trailer.key}`;
+                videoContainer.style.display = 'block';
                 setTimeout(() => {
                     videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
+                */
             };
         } else {
-            // Si la película de plano no tiene ningún video registrado en TMDb, ocultamos el botón
             btnTrailer.style.display = 'none';
         }
 
