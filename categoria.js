@@ -25,33 +25,34 @@ const nombresTraducidos = {
 // =========================================================================
 async function cargarPeliculasPorGenero() {
     try {
-        // 1. Leemos la palabra clave que viene en la URL (?id=anime, ?id=spain, etc.)
         const parametros = new URLSearchParams(window.location.search);
-        let genero = parametros.get('id') || 'hollywood'; // Si no hay ninguno, por defecto Hollywood
+        let genero = parametros.get('id') || 'hollywood'; 
 
-        // 2. Cambiamos el título principal de la pantalla de forma bonita
         const tituloPrincipal = document.getElementById('titulo-principal');
         if (tituloPrincipal) {
             tituloPrincipal.innerText = nombresTraducidos[genero.toLowerCase()] || `Categoría: ${genero.toUpperCase()}`;
         }
 
-        // 3. Hacemos la petición limpia a OMDb API
         const url = `https://www.omdbapi.com/?s=${genero}&apikey=${API_KEY}&type=movie`;
         const respuesta = await fetch(url);
         const datos = await respuesta.json();
 
         if (!contenedorCategorias) return;
-        contenedorCategorias.innerHTML = ''; // Limpiamos el "Cargando..." o pantalla vacía
+        contenedorCategorias.innerHTML = ''; 
 
         if (datos.Response === "True") {
             datos.Search.forEach(pelicula => {
-                if (pelicula.Poster === "N/A") return; // Saltamos películas sin póster
+                // FILTRO 1: Saltamos las que no tengan póster en la base de datos
+                if (!pelicula.Poster || pelicula.Poster === "N/A") return; 
 
                 const tarjeta = document.createElement('div');
                 tarjeta.classList.add('movie-card');
 
+                // Portada de respaldo elegante por si el enlace original falla al cargar
+                const imagenRespaldo = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
+
                 tarjeta.innerHTML = `
-                    <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')">
+                    <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
                     <div class="movie-info">
                         <h3>${pelicula.Title}</h3>
                         <span>📅 ${pelicula.Year}</span>

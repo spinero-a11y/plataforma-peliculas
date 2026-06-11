@@ -11,41 +11,47 @@ const videoContainer = document.getElementById('video-container');
 // =========================================================================
 // 2. FUNCIÓN PRINCIPAL PARA CARGAR PELÍCULAS POR PALABRA CLAVE
 // =========================================================================
-async function cargarSeccion(busquedaKeyword, contenedor) {
+async function cargarSeccionMulticultural(keywords, contenedor) {
     try {
-        // OMDb busca películas reales por palabras clave. 
-        // Traeremos joyas del cine de forma dinámica.
-        const url = `https://www.omdbapi.com/?s=${busquedaKeyword}&apikey=${API_KEY}&type=movie`;
-        const respuesta = await fetch(url);
-        const datos = await respuesta.json();
-        
-        contenedor.innerHTML = '';
+        contenedor.innerHTML = ''; 
+        let peliculasMezcladas = [];
 
-        if (datos.Response === "True") {
-            datos.Search.forEach(pelicula => {
-                // Filtramos para evitar tarjetas sin póster válido
-                if (pelicula.Poster === "N/A") return;
-
-                const tarjeta = document.createElement('div');
-                tarjeta.classList.add('movie-card');
-
-                tarjeta.innerHTML = `
-                    <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')">
-                    <div class="movie-info">
-                        <h3>${pelicula.Title}</h3>
-                        <span>📅 ${pelicula.Year}</span>
-                        <button class="btn-add-list" onclick="guardarEnLista('${pelicula.imdbID}', '${pelicula.Title.replace(/'/g, "\\'")}', '${pelicula.Poster}', 8.5)">
-                            <span class="material-symbols-outlined">add</span> Mi Lista
-                        </button>
-                    </div>
-                `;
-                contenedor.appendChild(tarjeta);
-            });
-        } else {
-            contenedor.innerHTML = `<p class="error-msg">No se encontraron películas para esta sección.</p>`;
+        for (const word of keywords) {
+            const url = `https://www.omdbapi.com/?s=${word}&apikey=${API_KEY}&type=movie`;
+            const respuesta = await fetch(url);
+            const datos = await respuesta.json();
+            
+            if (datos.Response === "True") {
+                // FILTRO 1: Guardamos solo las películas que SÍ tengan un póster válido (evitamos los "N/A")
+                const peliculasConFoto = datos.Search.filter(p => p.Poster && p.Poster !== "N/A");
+                peliculasMezcladas = peliculasMezcladas.concat(peliculasConFoto.slice(0, 4));
+            }
         }
+
+        peliculasMezcladas.sort(() => 0.5 - Math.random());
+
+        peliculasMezcladas.forEach(pelicula => {
+            const tarjeta = document.createElement('div');
+            tarjeta.classList.add('movie-card');
+
+            // FILTRO 2 (onerror): Si el enlace de OMDb está roto, se activa esta imagen de respaldo premium en negro y dorado
+            const imagenRespaldo = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
+
+            tarjeta.innerHTML = `
+                <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
+                <div class="movie-info">
+                    <h3>${pelicula.Title}</h3>
+                    <span>📅 ${pelicula.Year}</span>
+                    <button class="btn-add-list" onclick="guardarEnLista('${pelicula.imdbID}', '${pelicula.Title.replace(/'/g, "\\'")}', '${pelicula.Poster}', 8.5)">
+                        <span class="material-symbols-outlined">add</span> Mi Lista
+                    </button>
+                </div>
+            `;
+            contenedor.appendChild(tarjeta);
+        });
+
     } catch (error) {
-        console.error("Error al conectar con OMDb API:", error);
+        console.error("Error al armar la sección multicultural:", error);
     }
 }
 
