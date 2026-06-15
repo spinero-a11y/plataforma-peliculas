@@ -42,17 +42,16 @@ async function cargarPeliculasPorGenero() {
 
         if (datos.Response === "True") {
             datos.Search.forEach(pelicula => {
-                // FILTRO 1: Saltamos las que no tengan póster en la base de datos
                 if (!pelicula.Poster || pelicula.Poster === "N/A") return; 
 
                 const tarjeta = document.createElement('div');
                 tarjeta.classList.add('movie-card');
 
-                // Portada de respaldo elegante por si el enlace original falla al cargar
                 const imagenRespaldo = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
 
+                // Añadimos referrerpolicy="no-referrer" aquí también
                 tarjeta.innerHTML = `
-                    <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
+                    <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
                     <div class="movie-info">
                         <h3>${pelicula.Title}</h3>
                         <span>📅 ${pelicula.Year}</span>

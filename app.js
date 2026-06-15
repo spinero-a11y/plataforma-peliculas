@@ -22,7 +22,6 @@ async function cargarSeccionMulticultural(keywords, contenedor) {
             const datos = await respuesta.json();
             
             if (datos.Response === "True") {
-                // FILTRO 1: Guardamos solo las películas que SÍ tengan un póster válido (evitamos los "N/A")
                 const peliculasConFoto = datos.Search.filter(p => p.Poster && p.Poster !== "N/A");
                 peliculasMezcladas = peliculasMezcladas.concat(peliculasConFoto.slice(0, 4));
             }
@@ -34,11 +33,11 @@ async function cargarSeccionMulticultural(keywords, contenedor) {
             const tarjeta = document.createElement('div');
             tarjeta.classList.add('movie-card');
 
-            // FILTRO 2 (onerror): Si el enlace de OMDb está roto, se activa esta imagen de respaldo premium en negro y dorado
             const imagenRespaldo = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
 
+            // OJO AQUÍ: Añadimos referrerpolicy="no-referrer" para romper el bloqueo de Amazon/IMDb
             tarjeta.innerHTML = `
-                <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
+                <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
                 <div class="movie-info">
                     <h3>${pelicula.Title}</h3>
                     <span>📅 ${pelicula.Year}</span>
