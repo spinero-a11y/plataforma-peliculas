@@ -47,28 +47,57 @@
         </div>
     </header>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="main-layout">
+  <main class="main-layout">
         
-        <section class="movie-section">
-    <h2 class="section-title" id="titulo-principal">Recomendados para ti</h2>
-    <div class="slider-wrapper">
-        <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-populares', 'izquierda')">&#10094;</button>
-        <div id="contenedor-populares" class="movies-slider">
+        <section class="welcome-panel">
+            <div class="welcome-text">
+                <h2>¡Hola de nuevo! ¿Qué te apetece ver hoy?</h2>
+                <p>Explora tu biblioteca o deja que el azar decida por ti.</p>
             </div>
-        <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-populares', 'derecha')">&#10095;</button>
-    </div>
-</section>
+            <button id="btn-sorprendeme" class="btn-action btn-random" onclick="obtenerPeliculaAleatoria()">
+                🎲 Sorpréndeme
+            </button>
+        </section>
 
-<section class="movie-section" id="seccion-tendencias">
-    <h2 class="section-title">Tendencias de la semana</h2>
-    <div class="slider-wrapper">
-        <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-tendencias', 'izquierda')">&#10094;</button>
-        <div id="contenedor-tendencias" class="movies-slider">
+        <section class="movie-section" id="seccion-continuar" style="display: none;">
+            <h2 class="section-title">Continuar viendo</h2>
+            <div class="slider-wrapper">
+                <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-continuar', 'izquierda')">&#10094;</button>
+                <div id="contenedor-continuar" class="movies-slider-resume">
+                    </div>
+                <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-continuar', 'derecha')">&#10095;</button>
             </div>
-        <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-tendencias', 'derecha')">&#10095;</button>
-    </div>
-</section>
+        </section>
+
+        <section class="movie-section" id="seccion-tendencias-hoy">
+            <h2 class="section-title">Tendencias de hoy 🔥</h2>
+            <div class="slider-wrapper">
+                <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-tendencias-hoy', 'izquierda')">&#10094;</button>
+                <div id="contenedor-tendencias-hoy" class="movies-slider">
+                    </div>
+                <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-tendencias-hoy', 'derecha')">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="movie-section" id="seccion-familiar">
+            <h2 class="section-title">Cine Familiar 🍿</h2>
+            <div class="slider-wrapper">
+                <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-familiar', 'izquierda')">&#10094;</button>
+                <div id="contenedor-familiar" class="movies-slider">
+                    </div>
+                <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-familiar', 'derecha')">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="movie-section" id="seccion-comedia">
+            <h2 class="section-title">Risas Aseguradas (Comedia) 🎭</h2>
+            <div class="slider-wrapper">
+                <button class="arrow-btn left-arrow" onclick="deslizar('contenedor-comedia', 'izquierda')">&#10094;</button>
+                <div id="contenedor-comedia" class="movies-slider">
+                    </div>
+                <button class="arrow-btn right-arrow" onclick="deslizar('contenedor-comedia', 'derecha')">&#10095;</button>
+            </div>
+        </section>
 
     </main>
 
