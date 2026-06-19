@@ -1,43 +1,55 @@
 // =========================================================================
-// 1. CONFIGURACIÓN DE OMDb API (¡Pon tu clave aquí!)
+// 1. CONFIGURACIÓN DE OMDb API
 // =========================================================================
-const API_KEY = "ce3f855f"; // <-- Pega aquí la clave que te llegó al correo
+const API_KEY = "ce3f855f"; 
 
-// Configuración de la ventana modal y reproductor
+// Elementos de la interfaz y ventana modal
 const modal = document.getElementById('movie-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const videoContainer = document.getElementById('video-container');
+const inputBusqueda = document.getElementById('input-busqueda');
+
+// Array global para almacenar las películas cargadas y alimentar el botón "Sorpréndeme"
+let poolPeliculasAleatorias = [];
+
+// Imagen de respaldo por si algún póster falla de origen
+const IMAGEN_RESPALDO = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
 
 // =========================================================================
-// 2. FUNCIÓN PRINCIPAL PARA CARGAR PELÍCULAS POR PALABRA CLAVE
+// 2. FUNCIÓN CORE: GENERADOR DINÁMICO MULTICULTURAL / MULTIGÉNERO
 // =========================================================================
-async function cargarSeccionMulticultural(keywords, contenedor) {
+async function cargarSeccionPorPalabras(keywords, contenedor) {
     try {
+        if (!contenedor) return;
         contenedor.innerHTML = ''; 
         let peliculasMezcladas = [];
 
+        // Consultas simultáneas por cada palabra clave asociada al género o categoría
         for (const word of keywords) {
-            const url = `https://www.omdbapi.com/?s=${word}&apikey=${API_KEY}&type=movie`;
+            const url = `https://www.omdbapi.com/?s=${encodeURIComponent(word)}&apikey=${API_KEY}&type=movie`;
             const respuesta = await fetch(url);
             const datos = await respuesta.json();
             
             if (datos.Response === "True") {
-                const peliculasConFoto = datos.Search.filter(p => p.Poster && p.Poster !== "N/A");
-                peliculasMezcladas = peliculasMezcladas.concat(peliculasConFoto.slice(0, 4));
+                // Filtramos las que tengan poster y agarramos un subset para garantizar variedad mixta
+                const peliculasValidas = datos.Search.filter(p => p.Poster && p.Poster !== "N/A");
+                peliculasMezcladas = peliculasMezcladas.concat(peliculasValidas.slice(0, 5));
             }
         }
 
+        // Guardamos en el pool global para la función "Sorpréndeme"
+        poolPeliculasAleatorias = poolPeliculasAleatorias.concat(peliculasMezcladas);
+
+        // Mezclamos el array aleatoriamente para mantener el catálogo fresco en cada recarga
         peliculasMezcladas.sort(() => 0.5 - Math.random());
 
+        // Inyectamos las tarjetas en su contenedor correspondiente
         peliculasMezcladas.forEach(pelicula => {
             const tarjeta = document.createElement('div');
             tarjeta.classList.add('movie-card');
 
-            const imagenRespaldo = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
-
-            // OJO AQUÍ: Añadimos referrerpolicy="no-referrer" para romper el bloqueo de Amazon/IMDb
             tarjeta.innerHTML = `
-                <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
+                <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${IMAGEN_RESPALDO}';">
                 <div class="movie-info">
                     <h3>${pelicula.Title}</h3>
                     <span>📅 ${pelicula.Year}</span>
@@ -50,31 +62,53 @@ async function cargarSeccionMulticultural(keywords, contenedor) {
         });
 
     } catch (error) {
-        console.error("Error al armar la sección multicultural:", error);
+        console.error("Error al construir la sección por palabras clave:", error);
     }
 }
 
 // =========================================================================
-// 3. FUNCIÓN PARA ABRIR LA MODAL CON DETALLES REALES (IMDb ID)
+// 3. INICIALIZADOR DEL CATÁLOGO PRINCIPAL (TENDENCIAS, COMEDIA, FAMILIAR)
+// =========================================================================
+function inicializarCatalogo() {
+    poolPeliculasAleatorias = []; // Reseteamos el pool en cada reinicio
+
+    const contenedorTendencias = document.getElementById('contenedor-tendencias-hoy');
+    const contenedorFamiliar = document.getElementById('contenedor-familiar');
+    const contenedorComedia = document.getElementById('contenedor-comedia');
+
+    // --- Carrusel 1: Tendencias de Hoy Automatizadas ---
+    // Usamos el año en curso para traer lanzamientos de máxima relevancia actual
+    const anioActual = new Date().getFullYear().toString();
+    cargarSeccionPorPalabras([anioActual, '2025', 'Hits', 'Action'], contenedorTendencias);
+
+    // --- Carrusel 2: Cine Familiar ---
+    cargarSeccionPorPalabras(['Family', 'Animation', 'Disney', 'Pixar'], contenedorFamiliar);
+
+    // --- Carrusel 3: Risas Aseguradas (Comedia) ---
+    cargarSeccionPorPalabras(['Comedy', 'Funny', 'Hilarious'], contenedorComedia);
+    
+    // Inicializar el carrusel de continuar viendo si existen datos previos
+    comprobarContinuarViendo();
+}
+
+// =========================================================================
+// 4. DETALLES EN MODAL Y REPRODUCTOR INTEGRADO
 // =========================================================================
 async function abrirDetalles(imdbID) {
     try {
-        // Pedimos a OMDb los detalles completos (sinopsis, actores, nota) de la película pulsada
         const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${API_KEY}&plot=full`;
         const respuesta = await fetch(url);
         const pelicula = await respuesta.json();
 
-        // Rellenamos los datos de la modal con información oficial de Hollywood
-        document.getElementById('modal-img').src = pelicula.Poster !== "N/A" ? pelicula.Poster : 'https://via.placeholder.com/500x750?text=Sin+Imagen';
+        document.getElementById('modal-img').src = pelicula.Poster !== "N/A" ? pelicula.Poster : IMAGEN_RESPALDO;
         document.getElementById('modal-titulo').innerText = pelicula.Title;
-        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.imdbRating} (IMDb)`;
+        document.getElementById('modal-puntuacion').innerText = `⭐ ${pelicula.imdbRating || 'N/A'} (IMDb)`;
         document.getElementById('modal-fecha').innerText = pelicula.Year;
         document.getElementById('modal-sinopsis').innerText = pelicula.Plot !== "N/A" ? pelicula.Plot : "Sinopsis no disponible.";
 
-        // Reiniciamos el contenedor de video cada vez que abrimos una película nueva
         videoContainer.style.display = 'none';
 
-        // --- ACCIÓN DEL BOTÓN VER PELÍCULA (REPRODUCTOR ACTIVO) ---
+        // Lanzador del reproductor de video nativo
         document.getElementById('btn-ver-pelicula').onclick = () => {
             videoContainer.innerHTML = `
                 <video id="video-player-real" controls autoplay style="width:100%; aspect-ratio: 16/9; display:block;">
@@ -83,61 +117,104 @@ async function abrirDetalles(imdbID) {
                 </video>
             `;
             videoContainer.style.display = 'block';
+            
+            // Registramos de forma simulada en la lista "Continuar Viendo"
+            registrarContinuarViendo(pelicula);
+
             setTimeout(() => {
                 videoContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
         };
 
-        // OMDb no provee enlaces directos a trailers de YouTube, así que ocultamos el botón de tráiler para que no falle
         document.getElementById('btn-ver-trailer').style.display = 'none';
-
-        // Mostramos la ventana modal
         modal.style.display = 'block';
 
     } catch (error) {
-        console.error("Error al abrir detalles en OMDb:", error);
+        console.error("Error al abrir detalles desde la API:", error);
     }
 }
 
 // =========================================================================
-// 4. BUSCADOR INTELIGENTE (ESTILO NETFLIX CON FILTRO ANTIBLOQUEO)
+// 5. IDEAS AGREGADAS: SORPRÉNDEME Y CONTINUAR VIENDO
 // =========================================================================
-const inputBusqueda = document.getElementById('input-busqueda');
+function obtenerPeliculaAleatoria() {
+    if (poolPeliculasAleatorias.length === 0) return;
+    
+    // Eliminamos duplicados por Id de IMDB
+    const unicas = [...new Map(poolPeliculasAleatorias.map(p => [p.imdbID, p])).values()];
+    const indice = Math.floor(Math.random() * unicas.length);
+    
+    abrirDetalles(unicas[indice].imdbID);
+}
 
+function registrarContinuarViendo(pelicula) {
+    let lista = JSON.parse(localStorage.getItem('sofveria_progresos')) || [];
+    if (!lista.some(p => p.imdbID === pelicula.imdbID)) {
+        lista.unshift({ imdbID: pelicula.imdbID, Title: pelicula.Title, Poster: pelicula.Poster, Year: pelicula.Year });
+        localStorage.setItem('sofveria_progresos', JSON.stringify(lista.slice(0, 4))); // Máximo 4 guardados
+    }
+}
+
+function comprobarContinuarViendo() {
+    const contenedor = document.getElementById('contenedor-continuar');
+    const seccion = document.getElementById('seccion-continuar');
+    let lista = JSON.parse(localStorage.getItem('sofveria_progresos')) || [];
+
+    if (lista.length > 0 && contenedor && seccion) {
+        seccion.style.display = 'block';
+        contenedor.innerHTML = '';
+        lista.forEach(pelicula => {
+            const tarjeta = document.createElement('div');
+            tarjeta.classList.add('movie-card');
+            tarjeta.innerHTML = `
+                <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')">
+                <div class="progress-bar-container" style="background:#444; width:100%; height:4px; margin-top:-4px; position:relative;">
+                    <div style="background:#e50914; width:65%; height:100%;"></div>
+                </div>
+            `;
+            contenedor.appendChild(tarjeta);
+        });
+    }
+}
+
+// =========================================================================
+// 6. BUSCADOR INTELIGENTE EN REJILLA
+// =========================================================================
 inputBusqueda.addEventListener('input', async (evento) => {
     const textoBusqueda = evento.target.value.trim();
     const tituloPrincipal = document.getElementById('titulo-principal');
-    const seccionTendencias = document.getElementById('seccion-tendencias');
     const contenedorPopulares = document.getElementById('contenedor-populares');
+    
+    // Captura de las nuevas secciones para ocultarlas/mostrarlas adecuadamente
+    const seccionTendencias = document.getElementById('seccion-tendencias-hoy');
+    const seccionFamiliar = document.getElementById('seccion-familiar');
+    const seccionComedia = document.getElementById('seccion-comedia');
+    const seccionContinuar = document.getElementById('seccion-continuar');
 
-    // Si el usuario escribe más de 2 letras (por ejemplo: "bac...")
     if (textoBusqueda.length > 2) {
-        // 1. Cambiamos el título de la sección dinámicamente
         tituloPrincipal.innerText = `Resultados para: "${textoBusqueda}"`;
         
-        // 2. Ocultamos el segundo carrusel (Tendencias) para darle todo el protagonismo a la búsqueda
-        if (seccionTendencias) seccionTendencias.style.display = 'none'; 
+        // Escondemos los feeds secundarios durante la búsqueda activa
+        if (seccionTendencias) seccionTendencias.style.display = 'none';
+        if (seccionFamiliar) seccionFamiliar.style.display = 'none';
+        if (seccionComedia) seccionComedia.style.display = 'none';
+        if (seccionContinuar) seccionContinuar.style.display = 'none';
 
         try {
-            // 3. Consultamos a OMDb con lo que el usuario está tecleando
             const url = `https://www.omdbapi.com/?s=${encodeURIComponent(textoBusqueda)}&apikey=${API_KEY}`;
             const respuesta = await fetch(url);
             const datos = await respuesta.json();
             
-            contenedorPopulares.innerHTML = ''; // Limpiamos la rejilla para meter los resultados
+            contenedorPopulares.innerHTML = ''; 
 
             if (datos.Response === "True") {
                 datos.Search.forEach(pelicula => {
-                    // Filtro de seguridad: ignoramos resultados sin póster oficial
                     if (!pelicula.Poster || pelicula.Poster === "N/A") return;
 
                     const tarjeta = document.createElement('div');
                     tarjeta.classList.add('movie-card');
-                    const imagenRespaldo = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
-
-                    // Inyectamos el escudo referrerpolicy para que carguen películas de terror/misterio como Backrooms sin fallos
                     tarjeta.innerHTML = `
-                        <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${imagenRespaldo}';">
+                        <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${IMAGEN_RESPALDO}';">
                         <div class="movie-info">
                             <h3>${pelicula.Title}</h3>
                             <span>📅 ${pelicula.Year}</span>
@@ -149,39 +226,39 @@ inputBusqueda.addEventListener('input', async (evento) => {
                     contenedorPopulares.appendChild(tarjeta);
                 });
             } else {
-                // Si la API no encuentra nada (por ejemplo, si escriben algo al azar como "asdfgh")
-                contenedorPopulares.innerHTML = `<p class="error-msg" style="color: #aaa; padding: 20px;">No se han encontrado resultados que coincidan con tu búsqueda.</p>`;
+                contenedorPopulares.innerHTML = `<p class="error-msg" style="color: #aaa; padding: 20px;">No se han encontrado resultados.</p>`;
             }
         } catch (error) {
             console.error("Error en el buscador inteligente:", error);
         }
 
     } else if (textoBusqueda.length === 0) {
-        // Si el usuario borra por completo el buscador, restauramos la pantalla de Netflix original
         tituloPrincipal.innerText = "Recomendados para ti";
-        if (seccionTendencias) seccionTendencias.style.display = 'block'; 
+        if (seccionTendencias) seccionTendencias.style.display = 'block';
+        if (seccionFamiliar) seccionFamiliar.style.display = 'block';
+        if (seccionComedia) seccionComedia.style.display = 'block';
         inicializarCatalogo();
     }
 });
 
-// --- EL RESTO DE TUS FUNCIONES AUXILIARES SE QUEDAN IGUAL ---
-// Deslizamiento del carrusel
+// =========================================================================
+// 7. COMPORTAMIENTO Y NAVEGACIÓN
+// =========================================================================
 function deslizar(idContenedor, direccion) {
     const contenedor = document.getElementById(idContenedor);
-    if (direccion === 'izquierda') {
-        contenedor.scrollLeft -= 500;
-    } else {
-        contenedor.scrollLeft += 500;
-    }
+    if (!contenedor) return;
+    contenedor.scrollLeft += (direccion === 'izquierda' ? -500 : 500);
 }
 
-// Botón de Inicio en el Menú
 document.getElementById('btn-inicio').addEventListener('click', (e) => {
     e.preventDefault();
     inputBusqueda.value = ''; 
     document.getElementById('titulo-principal').innerText = "Recomendados para ti";
-    const seccionTendencias = document.getElementById('seccion-tendencias');
-    if (seccionTendencias) seccionTendencias.style.display = 'block';
+    
+    document.getElementById('seccion-tendencias-hoy').style.display = 'block';
+    document.getElementById('seccion-familiar').style.display = 'block';
+    document.getElementById('seccion-comedia').style.display = 'block';
+    
     inicializarCatalogo();
 });
 
@@ -190,12 +267,9 @@ document.getElementById('btn-recomendados').addEventListener('click', (e) => {
     document.getElementById('titulo-principal').scrollIntoView({ behavior: 'smooth' });
 });
 
-// Guardar en favoritos
 function guardarEnLista(id, titulo, poster, voto) {
     let listaFavoritos = JSON.parse(localStorage.getItem('sofveria_favoritos')) || [];
-    const existe = listaFavoritos.some(p => p.id === id);
-
-    if (!existe) {
+    if (!listaFavoritos.some(p => p.id === id)) {
         listaFavoritos.push({ id, titulo, poster, voto });
         localStorage.setItem('sofveria_favoritos', JSON.stringify(listaFavoritos));
         alert(`"${titulo}" se ha añadido a Mi Lista.`);
@@ -204,47 +278,7 @@ function guardarEnLista(id, titulo, poster, voto) {
     }
 }
 
-// Deslizamiento del carrusel
-function deslizar(idContenedor, direccion) {
-    const contenedor = document.getElementById(idContenedor);
-    if (direccion === 'izquierda') {
-        contenedor.scrollLeft -= 500;
-    } else {
-        contenedor.scrollLeft += 500;
-    }
-}
-
-// Botón de Inicio en el Menú
-document.getElementById('btn-inicio').addEventListener('click', (e) => {
-    e.preventDefault();
-    inputBusqueda.value = ''; 
-    document.getElementById('titulo-principal').innerText = "Recomendados para ti";
-    document.getElementById('seccion-tendencias').style.display = 'block';
-    inicializarCatalogo();
-});
-
-document.getElementById('btn-recomendados').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('titulo-principal').scrollIntoView({ behavior: 'smooth' });
-});
-
-// Guardar en favoritos (LocalStorage)
-function guardarEnLista(id, titulo, poster, voto) {
-    let listaFavoritos = JSON.parse(localStorage.getItem('sofveria_favoritos')) || [];
-    const existe = listaFavoritos.some(p => p.id === id);
-
-    if (!existe) {
-        listaFavoritos.push({ id, titulo, poster, voto });
-        localStorage.setItem('sofveria_favoritos', JSON.stringify(listaFavoritos));
-        alert(`"${titulo}" se ha añadido a Mi Lista.`);
-    } else {
-        alert("Esta película ya está en tu lista.");
-    }
-}
-
-// =========================================================================
-// 5. EVENTOS DE CIERRE DE LA VENTANA MODAL
-// =========================================================================
+// Controles de cierre de la modal
 closeModalBtn.onclick = () => {
     modal.style.display = 'none';
     videoContainer.style.display = 'none';
@@ -260,68 +294,6 @@ window.onclick = (evento) => {
 };
 
 // =========================================================================
-// 6. INICIALIZACIÓN AUTOMÁTICA DEL CATÁLOGO MULTICULTURAL
+// 8. ARRANQUE
 // =========================================================================
-function inicializarCatalogo() {
-    const contenedorPopulares = document.getElementById('contenedor-populares');
-    const contenedorTendencias = document.getElementById('contenedor-tendencias');
-
-    // --- Carrusel 1: Recomendados para ti (Mix de Cine Español, Hollywood e Inglés) ---
-    // Buscamos "Madrid" para forzar el cine español y "London" para el británico clásico, combinados con Hollywood
-    cargarSeccionMulticultural(['Hollywood', 'Madrid', 'London'], contenedorPopulares);
-
-    // --- Carrusel 2: Tendencias de la semana (Mix de Anime, K-Dramas, Cine Coreano, Japonés y Tailandés) ---
-    // Palabras clave súper potentes para arrastrar animación y dramas asiáticos de golpe
-    cargarSeccionMulticultural(['Anime', 'Korea', 'Japan', 'Thailand'], contenedorTendencias);
-}
-
-// NUEVA FUNCIÓN INTELIGENTE: Mezcla resultados de varios mundos para que no salga solo un tipo de película
-async function cargarSeccionMulticultural(keywords, contenedor) {
-    try {
-        contenedor.innerHTML = ''; // Limpiamos la caja
-        let peliculasMezcladas = [];
-
-        // Hacemos micro-búsquedas por cada palabra clave para juntar el catálogo global
-        for (const word of keywords) {
-            const url = `https://www.omdbapi.com/?s=${word}&apikey=${API_KEY}&type=movie`;
-            const respuesta = await fetch(url);
-            const datos = await respuesta.json();
-            
-            if (datos.Response === "True") {
-                // Tomamos las primeras 4 películas de cada temática para armar la variedad
-                peliculasMezcladas = peliculasMezcladas.concat(datos.Search.slice(0, 4));
-            }
-        }
-
-        // Ordenamos la lista de forma aleatoria para que cada vez que recargues se vea diferente y fresco
-        peliculasMezcladas.sort(() => 0.5 - Math.random());
-
-        // Dibujamos las tarjetas internacionales en la interfaz
-        peliculasMezcladas.forEach(pelicula => {
-            if (pelicula.Poster === "N/A") return;
-
-            const tarjeta = document.createElement('div');
-            tarjeta.classList.add('movie-card');
-
-            tarjeta.innerHTML = `
-                <img src="${pelicula.Poster}" alt="${pelicula.Title}" onclick="abrirDetalles('${pelicula.imdbID}')">
-                <div class="movie-info">
-                    <h3>${pelicula.Title}</h3>
-                    <span>📅 ${pelicula.Year}</span>
-                    <button class="btn-add-list" onclick="guardarEnLista('${pelicula.imdbID}', '${pelicula.Title.replace(/'/g, "\\'")}', '${pelicula.Poster}', 8.5)">
-                        <span class="material-symbols-outlined">add</span> Mi Lista
-                    </button>
-                </div>
-            `;
-            contenedor.appendChild(tarjeta);
-        });
-
-    } catch (error) {
-        console.error("Error al armar la sección multicultural:", error);
-    }
-}
-
-// ¡Arranca la plataforma con tu catálogo global!
-inicializarCatalogo();
-// Arranca la plataforma
 inicializarCatalogo();
