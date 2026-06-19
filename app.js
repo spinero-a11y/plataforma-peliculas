@@ -67,7 +67,7 @@ async function cargarSeccionPorPalabras(keywords, contenedor) {
 }
 
 // =========================================================================
-// 3. INICIALIZADOR DEL CATÁLOGO PRINCIPAL (TENDENCIAS, COMEDIA, FAMILIAR)
+// 3. INICIALIZADOR DEL CATÁLOGO PRINCIPAL (MODERNO Y ESTILO NETFLIX)
 // =========================================================================
 function inicializarCatalogo() {
     poolPeliculasAleatorias = []; // Reseteamos el pool en cada reinicio
@@ -76,16 +76,20 @@ function inicializarCatalogo() {
     const contenedorFamiliar = document.getElementById('contenedor-familiar');
     const contenedorComedia = document.getElementById('contenedor-comedia');
 
-    // --- Carrusel 1: Tendencias de Hoy Automatizadas ---
-    // Usamos el año en curso para traer lanzamientos de máxima relevancia actual
-    const anioActual = new Date().getFullYear().toString();
-    cargarSeccionPorPalabras([anioActual, '2025', 'Hits', 'Action'], contenedorTendencias);
+    // Conseguimos el año actual dinámicamente (2026)
+    const anioActual = new Date().getFullYear();
 
-    // --- Carrusel 2: Cine Familiar ---
-    cargarSeccionPorPalabras(['Family', 'Animation', 'Disney', 'Pixar'], contenedorFamiliar);
+    // --- Carrusel 1: Tendencias de Hoy (Películas de estreno absoluto 2025-2026) ---
+    // Forzamos palabras clave de acción y éxitos comerciales de estos dos últimos años
+    cargarSeccionPorPalabras([`${anioActual}`, `${anioActual - 1}`, 'Avengers', 'John Wick', 'Spider'], contenedorTendencias);
 
-    // --- Carrusel 3: Risas Aseguradas (Comedia) ---
-    cargarSeccionPorPalabras(['Comedy', 'Funny', 'Hilarious'], contenedorComedia);
+    // --- Carrusel 2: Cine Familiar Moderno (Animación digital reciente estilo Disney/Pixar/Illumination) ---
+    // Metemos títulos clave modernos para arrastrar sus sagas y películas similares recientes
+    cargarSeccionPorPalabras(['Shrek', 'Minions', 'Mario', 'Inside Out', 'Moana', 'Toy Story'], contenedorFamiliar);
+
+    // --- Carrusel 3: Risas Aseguradas / Comedia (Éxitos modernos y comedias comerciales) ---
+    // Buscamos películas divertidas contemporáneas metiendo nombres clave que devuelven sagas y éxitos de taquilla
+    cargarSeccionPorPalabras(['Barbie', 'Deadpool', 'Jumanji', 'Bad Boys', 'Ghostbusters'], contenedorComedia);
     
     // Inicializar el carrusel de continuar viendo si existen datos previos
     comprobarContinuarViendo();
