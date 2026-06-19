@@ -16,7 +16,7 @@ let poolPeliculasAleatorias = [];
 const IMAGEN_RESPALDO = `https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop`;
 
 // =========================================================================
-// 2. FUNCIÓN CORE: GENERADOR DINÁMICO MULTICULTURAL / MULTIGÉNERO
+// 2. FUNCIÓN CORE: GENERADOR DINÁMICO (FILTRO TOTAL CONTRA IMÁGENES ROTAS)
 // =========================================================================
 async function cargarSeccionPorPalabras(keywords, contenedor) {
     try {
@@ -24,32 +24,37 @@ async function cargarSeccionPorPalabras(keywords, contenedor) {
         contenedor.innerHTML = ''; 
         let peliculasMezcladas = [];
 
-        // Consultas simultáneas por cada palabra clave asociada al género o categoría
         for (const word of keywords) {
             const url = `https://www.omdbapi.com/?s=${encodeURIComponent(word)}&apikey=${API_KEY}&type=movie`;
             const respuesta = await fetch(url);
             const datos = await respuesta.json();
             
             if (datos.Response === "True") {
-                // Filtramos las que tengan poster y agarramos un subset para garantizar variedad mixta
-                const peliculasValidas = datos.Search.filter(p => p.Poster && p.Poster !== "N/A");
+                // ESCUDO 1: Filtrar estrictamente antes de guardar. 
+                // Evita "N/A", "n/a", vacíos o formatos extraños que no sean enlaces web reales.
+                const peliculasValidas = datos.Search.filter(p => 
+                    p.Poster && 
+                    p.Poster.trim() !== "" && 
+                    p.Poster.toUpperCase() !== "N/A" && 
+                    p.Poster.startsWith("http")
+                );
                 peliculasMezcladas = peliculasMezcladas.concat(peliculasValidas.slice(0, 5));
             }
         }
 
-        // Guardamos en el pool global para la función "Sorpréndeme"
         poolPeliculasAleatorias = poolPeliculasAleatorias.concat(peliculasMezcladas);
-
-        // Mezclamos el array aleatoriamente para mantener el catálogo fresco en cada recarga
         peliculasMezcladas.sort(() => 0.5 - Math.random());
 
-        // Inyectamos las tarjetas en su contenedor correspondiente
         peliculasMezcladas.forEach(pelicula => {
             const tarjeta = document.createElement('div');
             tarjeta.classList.add('movie-card');
 
+            // ESCUDO 2 (El truco maestro): Si la imagen falla al renderizarse en el navegador, 
+            // ejecutamos "this.closest('.movie-card').remove();" para borrar la película entera de la pantalla.
             tarjeta.innerHTML = `
-                <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" onclick="abrirDetalles('${pelicula.imdbID}')" onerror="this.onerror=null; this.src='${IMAGEN_RESPALDO}';">
+                <img src="${pelicula.Poster}" alt="${pelicula.Title}" referrerpolicy="no-referrer" 
+                     onclick="abrirDetalles('${pelicula.imdbID}')" 
+                     onerror="this.closest('.movie-card').remove();">
                 <div class="movie-info">
                     <h3>${pelicula.Title}</h3>
                     <span>📅 ${pelicula.Year}</span>
@@ -62,7 +67,7 @@ async function cargarSeccionPorPalabras(keywords, contenedor) {
         });
 
     } catch (error) {
-        console.error("Error al construir la sección por palabras clave:", error);
+        console.error("Error al construir la sección:", error);
     }
 }
 
